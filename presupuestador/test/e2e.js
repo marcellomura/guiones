@@ -90,6 +90,23 @@ function datosEjemplo() {
   await win.fill('[data-campo="l:2026-10.comprobante"]', '00002-00000015');
   for (const b of await win.$$('[data-doc="liquidacion"]')) { await b.click(); await win.waitForTimeout(1200); }
 
+  // Obra nueva desde cero, con un cliente dado de alta desde la ventana emergente.
+  await win.click('[data-vista="obras"]');
+  await win.click('.encabezado [data-accion="nueva-obra"]');
+  await win.fill('[data-campo="o:nombre"]', 'Obra nueva de prueba');
+  await win.selectOption('[data-campo="o:clienteId"]', '__nuevo');
+  await win.fill('#nc-rs', 'Cliente Nuevo S.R.L.');
+  await win.click('[data-modal="aceptar"]');
+  await win.waitForSelector('#modal[hidden]', { state: 'attached' });
+  await win.click('[data-tab="calendario"]');
+  await win.fill('[data-campo="o:calendario.inicio"]', '2026-11-02');
+  await win.click('[data-tab="resumen"]');
+  const totalNueva = await win.textContent('.kpi.destacado .v');
+  assert.match(totalNueva, /\$\s?[\d.]+/, 'la obra nueva debería tener total');
+  await foto('13-obra-nueva');
+  await win.click('[data-vista="obras"]');
+  assert.equal(await win.locator('.obra-card').count(), 2, 'deberían verse dos obras');
+
   for (const [v, n] of [['perfil', '09-perfil'], ['clientes', '10-clientes'], ['feriados', '11-feriados'], ['respaldo', '12-respaldo']]) {
     await win.click(`[data-vista="${v}"]`);
     await win.waitForTimeout(150);
@@ -101,6 +118,10 @@ function datosEjemplo() {
   await win.waitForTimeout(600);
   const guardado = JSON.parse(fs.readFileSync(path.join(USERDATA, 'datos.json'), 'utf8'));
   const ob = guardado.obras[0];
+  const nueva = guardado.obras.find((o) => o.nombre === 'Obra nueva de prueba');
+  assert.ok(nueva, 'la obra nueva no se guardó');
+  assert.equal(guardado.clientes.find((c) => c.id === nueva.clienteId).razonSocial, 'Cliente Nuevo S.R.L.');
+  assert.equal(nueva.calendario.inicio, '2026-11-02');
   assert.equal(ob.dias['2026-10-16'].estado, 'susp_parcial');
   assert.equal(ob.dias['2026-10-19'].horasExtra, 2);
   assert.equal(ob.liquidaciones['2026-10'].comprobante, '00002-00000015');
