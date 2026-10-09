@@ -10,6 +10,8 @@ on:
 jobs:
   windows:
     runs-on: windows-latest
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
     defaults:
       run:
         working-directory: presupuestador
@@ -28,8 +30,26 @@ jobs:
       - name: Pruebas de cálculo
         run: npm test
 
+      - name: Prueba de punta a punta (app real en Windows)
+        run: npm run test:e2e
+
       - name: Armar instalador
         run: npx electron-builder --win nsis --x64 --publish never
+
+      - name: Instalar y abrir la app instalada
+        shell: pwsh
+        run: |
+          $inst = Get-ChildItem dist\*.exe | Select-Object -First 1
+          Start-Process -FilePath $inst.FullName -ArgumentList '/S' -Wait
+          $exe = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'Presupuestador HyS.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $exe) { throw 'La app no quedó instalada.' }
+          Write-Host "Instalada en $($exe.FullName)"
+          $p = Start-Process -FilePath $exe.FullName -PassThru
+          Start-Sleep -Seconds 15
+          if ($p.HasExited) { throw "La app se cerró al iniciar (código $($p.ExitCode))." }
+          Stop-Process -Id $p.Id -Force
+          if (-not (Test-Path "$env:APPDATA\Presupuestador HyS\datos.json")) { throw 'La app no creó su archivo de datos.' }
+          Write-Host 'Instalación y arranque correctos.'
 
       - uses: actions/upload-artifact@v4
         with:
@@ -37,3 +57,11 @@ jobs:
           path: presupuestador/dist/*.exe
           if-no-files-found: error
           retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Prueba-Windows-capturas-y-PDF
+          path: presupuestador/test-output/
+          if-no-files-found: ignore
+          retention-days: 7

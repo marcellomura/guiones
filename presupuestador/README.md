@@ -25,11 +25,11 @@ Los datos se guardan en la carpeta de datos de usuario de Windows (`%APPDATA%\Pr
 npm install
 npm start            # abre la app
 npm test             # pruebas del cálculo
-npm run test:e2e     # prueba de punta a punta (Linux: xvfb-run -a npm run test:e2e)
+npm run test:e2e     # prueba de punta a punta (en Linux: xvfb-run -a npm run test:e2e)
 npm run dist:win     # instalador para Windows (en Windows, o en Linux con Wine)
 ```
 
-Cada cambio en `presupuestador/` dispara el flujo **Presupuestador HyS · instalador Windows** de GitHub Actions, que prueba y arma el instalador en una máquina Windows y lo deja como artefacto descargable.
+Cada cambio en `presupuestador/` dispara el flujo **Presupuestador HyS · instalador Windows** de GitHub Actions. En una máquina Windows corre las pruebas, abre la app real y genera los PDF, arma el instalador, lo instala en silencio y verifica que la app arranque. El instalador queda como artefacto descargable.
 
 ## Estructura
 
