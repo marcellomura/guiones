@@ -1,0 +1,45 @@
+{
+  "name": "presupuestador-hys",
+  "productName": "Presupuestador HyS",
+  "version": "1.0.0",
+  "description": "Presupuestos y liquidaciones mensuales en PDF para técnicos en Higiene y Seguridad",
+  "main": "src/main.js",
+  "author": "Presupuestador HyS",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/calc.test.js",
+    "test:e2e": "node test/e2e.js",
+    "dist:win": "electron-builder --win nsis --x64 --publish never",
+    "dist:win:sin-wine": "electron-builder --win nsis --x64 --publish never -c.win.signAndEditExecutable=false"
+  },
+  "devDependencies": {
+    "electron": "44.4.5",
+    "electron-builder": "26.16.1"
+  },
+  "build": {
+    "appId": "ar.hys.presupuestador",
+    "productName": "Presupuestador HyS",
+    "copyright": "Presupuestador HyS",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["src/**/*", "assets/**/*", "package.json"],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Presupuestador HyS",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerLanguages": ["es_ES"],
+      "language": "3082",
+      "artifactName": "Presupuestador-HyS-Instalador-${version}.exe"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+name: Presupuestador HyS · instalador Windows
+
+on:
+  push:
+    paths:
+      - 'presupuestador/**'
+      - '.github/workflows/presupuestador-windows.yml'
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: presupuestador
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: presupuestador/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Pruebas de cálculo
+        run: npm test
+
+      - name: Armar instalador
+        run: npx electron-builder --win nsis --x64 --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Presupuestador-HyS-Instalador
+          path: presupuestador/dist/*.exe
+          if-no-files-found: error
+          retention-days: 30
