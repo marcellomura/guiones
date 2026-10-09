@@ -1,7 +1,7 @@
 {
   "name": "presupuestador-hys",
   "productName": "Presupuestador HyS",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Presupuestos y liquidaciones mensuales en PDF para técnicos en Higiene y Seguridad",
   "main": "src/main.js",
   "author": "Presupuestador HyS",
@@ -10,7 +10,7 @@
   "repository": "https://github.com/marcellomura/guiones",
   "scripts": {
     "start": "electron .",
-    "test": "node --test test/calc.test.js",
+    "test": "node --test test/calc.test.js test/plantillas.test.js",
     "test:e2e": "node test/e2e.js",
     "dist:win": "electron-builder --win nsis --x64 --publish never",
     "dist:win:sin-wine": "electron-builder --win nsis --x64 --publish never -c.win.signAndEditExecutable=false"

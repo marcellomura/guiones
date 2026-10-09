@@ -117,8 +117,10 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
       inicio: r.inicio ? Calc.diaYFecha(r.inicio) : '', fin: r.fin ? Calc.diaYFecha(r.fin) : '',
       comitente: obra.comitente || cli.razonSocial || 'el comitente', cliente: cli.razonSocial || '',
       validez: `${Calc.num(obra.presupuesto.validezDias)} días`,
+      disponibilidad: disponibilidad(obra),
     };
   }
+  function disponibilidad(obra) { return String((obra.presupuesto || {}).disponibilidad || '').trim() || 'Disponibilidad inmediata'; }
   function conVariables(texto, vars) {
     return String(texto).replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
   }
@@ -193,6 +195,18 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
       <th class="c" style="width:11%">Jornadas</th><th class="r" style="width:17%">Subtotal</th></tr></thead><tbody>${filas.join('')}</tbody></table>`;
   }
 
+  function preciosJornada(r, obra) {
+    const t = obra.tarifas;
+    const filas = [['lv', 'Lunes a viernes'], ['sab', 'Sábados'], ['dom', 'Domingos y feriados']].map(([k, nm]) =>
+      `<tr><td><b>${nm}</b></td><td>${r.H} h × ${P(r.T.hora[k])}</td><td class="r"><b>${P(r.jornada[k])}</b></td></tr>`);
+    if (Calc.num(t.viatico) > 0) {
+      filas.push(`<tr><td><b>Viático de comida</b></td><td>Por jornada trabajada · ${t.viaticoProveeEmpresa ? 'la empresa provee la comida' : 'sin cargo si la empresa provee la comida'}</td>
+        <td class="r"><b>${t.viaticoProveeEmpresa ? 'Sin cargo' : P(Calc.num(t.viatico))}</b></td></tr>`);
+    }
+    if (r.movilidadJornada > 0) filas.push(`<tr><td><b>Movilidad</b></td><td>Por jornada trabajada</td><td class="r"><b>${P(r.movilidadJornada)}</b></td></tr>`);
+    return `<table><thead><tr><th style="width:28%">Concepto</th><th>Detalle</th><th class="r" style="width:20%">Valor</th></tr></thead><tbody>${filas.join('')}</tbody></table>`;
+  }
+
   // =====================================================================
   // Presupuesto para el cliente (una hoja)
   // =====================================================================
@@ -201,7 +215,10 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
     const r = Calc.calcular(obra, datos.feriados, { modo: 'presupuesto' });
     const cli = clienteDe(datos, obra);
     const c = obra.calendario;
+    const conTotales = !!obra.presupuesto.mostrarTotales;
     const vars = variables(datos, obra, r);
+    // Sin totales no se muestran fechas de obra, aunque un texto editado use {inicio} o {fin}.
+    if (!conTotales) Object.assign(vars, { inicio: vars.disponibilidad.charAt(0).toLowerCase() + vars.disponibilidad.slice(1), fin: 'según el avance de la obra' });
     let h = encabezado(perfil, 'PRESUPUESTO', [
       `N° <b>${esc(obra.presupuesto.numero)}</b>`,
       `${esc(perfil.ciudad ? perfil.ciudad + ', ' : '')}<b>${obra.presupuesto.fecha ? Calc.fechaLarga(obra.presupuesto.fecha) : ''}</b>`,
@@ -209,20 +226,27 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
     h += tituloObra(obra);
     const d1 = [cli.razonSocial && `<b>${esc(cli.razonSocial)}</b>`, cli.contacto && esc(cli.contacto)].filter(Boolean).join(' · ');
     const d2 = [obra.comitente && `Comitente: ${esc(obra.comitente)}`, obra.dotacion && `${esc(obra.dotacion)} operarios`].filter(Boolean).join(' · ');
-    const d3 = r.inicio ? `Inicio <b>${Calc.DIAS[Calc.diaSemana(r.inicio)]} ${Calc.fechaNum(r.inicio)}</b> · diagrama ${c.diasTrabajo} × ${c.diasDescanso} · ${hora(c.horaInicio)} a ${hora(c.horaFin)} h` : '';
+    const cuando = conTotales && r.inicio ? `Inicio <b>${Calc.DIAS[Calc.diaSemana(r.inicio)]} ${Calc.fechaNum(r.inicio)}</b>` : `<b>${esc(disponibilidad(obra))}</b>`;
+    const d3 = `${cuando} · diagrama ${c.diasTrabajo} × ${c.diasDescanso} · ${hora(c.horaInicio)} a ${hora(c.horaFin)} h`;
     h += `<div class="cards">${tarjetaProfesional(perfil)}<div class="card"><h3>Destinatario y obra</h3><div class="who4">${[d1, d2, d3].filter(Boolean).join('<br>')}</div></div></div>`;
     h += `<h2>Honorarios por hora</h2>${tablaTarifas(r, obra, false)}`;
     h += `<p class="small muted" style="margin:3px 0 0">Toda hora fuera del horario de ${esc(c.horaInicio)} a ${esc(c.horaFin)} se factura con el valor nocturno del día. Días no laborables: se cobran como día hábil.</p>`;
-    h += `<h2>Honorarios por jornada de ${r.H} horas${r.inicio ? ` · calendario real desde el ${fe(r.inicio)}` : ''}</h2>${filasJornadas(r, obra)}`;
-    const t = obra.tarifas;
-    const sinViatico = !t.viaticoProveeEmpresa && r.total.viatico > 0
-      ? `Con viático de comida. Si la empresa provee la comida: <b>${P(r.total.total - r.total.viatico)}</b>. ` : '';
-    h += `<div class="totbox"><div class="l">Total estimado · ${r.total.jornadas} jornadas${r.inicio ? ` · ${fe(r.inicio)} al ${fe(r.fin)}` : ''}
-      <small>${sinViatico}${textoIVA(perfil)}</small></div><div class="v num">${P(r.total.total)}</div></div>`;
-    const turnos = r.turnos.map((tr) => `T${tr.numero}: ${fe(tr.desde)} al ${fe(tr.hasta)}`).join(' · ');
-    const fer = r.feriadosPeriodo.filter((f) => f.trabajado && f.cobraComo === 'fer').map((f) => Calc.diaYFecha(f.fecha));
-    const meses = r.meses.filter((m) => m.total > 0).map((m) => `${Calc.MESES[Number(m.mes.slice(5)) - 1]} ${P(m.total)}`).join(' · ');
-    h += `<p class="small muted" style="margin:5px 0 0">${turnos ? `<b>Turnos:</b> ${turnos}. ` : ''}${fer.length ? `<b>Feriados trabajados:</b> ${lista(fer)}. ` : ''}${meses ? `<b>Facturación mensual estimada:</b> ${meses}.` : ''}</p>`;
+    if (conTotales) {
+      h += `<h2>Honorarios por jornada de ${r.H} horas${r.inicio ? ` · calendario real desde el ${fe(r.inicio)}` : ''}</h2>${filasJornadas(r, obra)}`;
+      const t = obra.tarifas;
+      const sinViatico = !t.viaticoProveeEmpresa && r.total.viatico > 0
+        ? `Con viático de comida. Si la empresa provee la comida: <b>${P(r.total.total - r.total.viatico)}</b>. ` : '';
+      h += `<div class="totbox"><div class="l">Total estimado · ${r.total.jornadas} jornadas${r.inicio ? ` · ${fe(r.inicio)} al ${fe(r.fin)}` : ''}
+        <small>${sinViatico}${textoIVA(perfil)}</small></div><div class="v num">${P(r.total.total)}</div></div>`;
+      const turnos = r.turnos.map((tr) => `T${tr.numero}: ${fe(tr.desde)} al ${fe(tr.hasta)}`).join(' · ');
+      const fer = r.feriadosPeriodo.filter((f) => f.trabajado && f.cobraComo === 'fer').map((f) => Calc.diaYFecha(f.fecha));
+      const meses = r.meses.filter((m) => m.total > 0).map((m) => `${Calc.MESES[Number(m.mes.slice(5)) - 1]} ${P(m.total)}`).join(' · ');
+      h += `<p class="small muted" style="margin:5px 0 0">${turnos ? `<b>Turnos:</b> ${turnos}. ` : ''}${fer.length ? `<b>Feriados trabajados:</b> ${lista(fer)}. ` : ''}${meses ? `<b>Facturación mensual estimada:</b> ${meses}.` : ''}</p>`;
+    } else {
+      h += `<h2>Honorarios por jornada de ${r.H} horas y gastos</h2>${preciosJornada(r, obra)}`;
+      const iva = textoIVA(perfil);
+      h += `<p class="small muted" style="margin:3px 0 0">Se factura mensualmente según las jornadas y horas efectivamente trabajadas, de acuerdo con el parte de asistencia.${iva ? ` ${iva}` : ''}</p>`;
+    }
     const sv = (obra.servicios || []).filter((s) => String(s).trim());
     if (sv.length) {
       const mitad = Math.ceil(sv.length / 2);

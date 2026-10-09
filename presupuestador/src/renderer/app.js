@@ -257,6 +257,9 @@ function tabDatos(o) {
     ${campo('Número', 'o:presupuesto.numero')}
     ${campo('Fecha de emisión', 'o:presupuesto.fecha', { tipo: 'date' })}
     ${campo('Validez de la oferta', 'o:presupuesto.validezDias', { tipo: 'number', num: true, min: 0, sufijo: 'días' })}
+    ${campo('Disponibilidad', 'o:presupuesto.disponibilidad', { cls: 'col-2', placeholder: 'Disponibilidad inmediata', ayuda: 'Va en el presupuesto en lugar de la fecha de inicio.' })}
+    <div class="col-todo">${casilla('Mostrar en el presupuesto para el cliente las cantidades de jornadas, el total estimado y las fechas de la obra', 'o:presupuesto.mostrarTotales')}
+      <div class="ayuda muted" style="font-size:11.5px">Apagado: el presupuesto muestra solo los precios por hora, por jornada y el viático.</div></div>
     </div></div>`;
 }
 
@@ -416,7 +419,7 @@ function tabLiquidaciones(o) {
 }
 
 function tabTextos(o) {
-  const vars = '<code>{viatico}</code> <code>{valorHora}</code> <code>{movilidad}</code> <code>{inicio}</code> <code>{fin}</code> <code>{comitente}</code> <code>{cliente}</code> <code>{validez}</code>';
+  const vars = '<code>{disponibilidad}</code> <code>{viatico}</code> <code>{valorHora}</code> <code>{movilidad}</code> <code>{comitente}</code> <code>{cliente}</code> <code>{validez}</code> <code>{inicio}</code> <code>{fin}</code>';
   return `<div class="grid g2"><div class="tarjeta">${areaLineas('El servicio incluye (una línea por ítem)', 'o:servicios', 'Usá **texto** para poner en negrita.')}
       <div class="fila mt"><button class="btn chico" data-accion="restaurar-textos" data-cual="servicios">Restaurar textos por defecto</button></div></div>
     <div class="tarjeta">${areaLineas('Condiciones comerciales (una línea por ítem)', 'o:condiciones', `Variables que se reemplazan solas: ${vars}`)}

@@ -4,7 +4,7 @@ App de escritorio para Windows que arma presupuestos y liquidaciones mensuales e
 
 ## Qué hace
 
-- **Presupuesto para el cliente** en una hoja, con logo, honorarios por hora, jornadas por tipo de día, viático, total y condiciones.
+- **Presupuesto para el cliente** en una hoja, con logo, honorarios por hora y por jornada según el tipo de día, viático, disponibilidad y condiciones. Por defecto no muestra total ni fechas de obra; una casilla en *Datos* los agrega.
 - **Presupuesto detallado** de uso interno: cómo se calcula cada número, calendario por colores, turnos, feriados y ejemplos.
 - **Liquidación mensual** día por día, con suspensiones, horas nocturnas, total en letras y datos del comprobante C.
 - **Calendario por diagrama** (por ejemplo 14 × 3): arma los turnos solo, aplica feriados y permite marcar cada día (feriado, suspensión con aviso, suspensión parcial o total, descanso trabajado, horas nocturnas).

@@ -63,7 +63,7 @@
     '**Viático de comida:** {viatico} por jornada; no se cobra si la empresa provee la comida. Movilidad: sin cargo.',
     '**Jornadas:** los descansos no se facturan. Suspensión por causas ajenas al profesional: sin cargo con aviso el día anterior; 50% en las primeras 4 h; completa después.',
     '**Precio fijo** durante 60 días corridos; luego se actualiza en la misma proporción que el valor módulo COPHISEC.',
-    '**Inicio:** {inicio}. Matrícula, póliza de accidentes personales a favor de {comitente} y Monotributo al día antes del ingreso.',
+    '**{disponibilidad}.** Matrícula, póliza de accidentes personales a favor de {comitente} y Monotributo al día antes del ingreso.',
     '**No incluye:** EPP, extintores, señalización ni botiquín del personal de la empresa, ni mediciones de higiene.',
   ];
 
@@ -86,7 +86,8 @@
       id: nuevoId(), nombre: 'Nueva obra', clienteId: '', creada: hoy || '',
       servicio: 'Servicio de Higiene y Seguridad con presencia permanente en obra',
       tarea: '', lugar: '', comitente: '', dotacion: '',
-      presupuesto: { numero: `${String(n).padStart(4, '0')}-${anio}`, fecha: hoy || '', validezDias: 15 },
+      presupuesto: { numero: `${String(n).padStart(4, '0')}-${anio}`, fecha: hoy || '', validezDias: 15,
+        disponibilidad: 'Disponibilidad inmediata', mostrarTotales: false },
       calendario: { inicio: hoy || '', diasTrabajo: 14, diasDescanso: 3, duracionDias: 60, horaInicio: '08:00', horaFin: '20:00' },
       tarifas: Object.assign({}, TARIFAS),
       servicios: SERVICIOS.slice(), condiciones: CONDICIONES.slice(),
@@ -97,6 +98,11 @@
   function datosIniciales() {
     return { version: VERSION_DATOS, perfil: perfilVacio(), clientes: [], obras: [],
       feriados: FERIADOS.map((f) => Object.assign({}, f)), numeracion: { presupuesto: 1 } };
+  }
+
+  // Versiones anteriores ponían la fecha de inicio en las condiciones; ahora va la disponibilidad.
+  function migrarCondicion(texto) {
+    return String(texto).replace(/^\s*\*\*Inicio:\*\*\s*\{inicio\}\.\s*/i, '**{disponibilidad}.** ');
   }
 
   // Completa campos faltantes (archivos viejos o importados) sin pisar lo existente.
@@ -118,7 +124,7 @@
       ob.calendario = Object.assign({}, plantilla.calendario, o.calendario || {});
       ob.tarifas = Object.assign({}, TARIFAS, o.tarifas || {});
       ob.servicios = Array.isArray(o.servicios) ? o.servicios : SERVICIOS.slice();
-      ob.condiciones = Array.isArray(o.condiciones) ? o.condiciones : CONDICIONES.slice();
+      ob.condiciones = Array.isArray(o.condiciones) ? o.condiciones.map(migrarCondicion) : CONDICIONES.slice();
       ob.dias = o.dias && typeof o.dias === 'object' ? o.dias : {};
       ob.liquidaciones = o.liquidaciones && typeof o.liquidaciones === 'object' ? o.liquidaciones : {};
       return ob;
