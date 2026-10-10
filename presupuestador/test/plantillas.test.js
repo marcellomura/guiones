@@ -77,3 +77,32 @@ test('el presupuesto detallado interno y la liquidación siguen mostrando totale
   const liq = texto(Plantillas.liquidacion(d, o, '2026-10').html);
   assert.ok(/Total del período/i.test(liq));
 });
+
+test('la migración corre una sola vez: con datos versión 2 se respeta el texto del usuario', () => {
+  const propia = '**Inicio:** {inicio}. Matrícula al día.';
+  const n = Defaults.normalizar({ version: 2, obras: [{ condiciones: [propia] }] });
+  assert.equal(n.obras[0].condiciones[0], propia);
+  assert.equal(Defaults.normalizar({ obras: [{ condiciones: [propia] }] }).version, 2, 'los datos migrados quedan en versión 2');
+});
+
+test('la disponibilidad no duplica el punto ni rompe la negrita, y respeta siglas', () => {
+  const { d, o } = datos({ disponibilidad: '**Disponible desde el lunes.** ' });
+  o.condiciones = ['**{disponibilidad}.** Matrícula al día.', 'Inicio: {inicio}.'];
+  const html = Plantillas.presupuestoCliente(d, o).html;
+  const t = texto(html);
+  assert.ok(t.includes('Disponible desde el lunes. Matrícula al día.'));
+  assert.ok(!t.includes('..') && !t.includes('*'), 'sin punto doble ni asteriscos sueltos');
+  assert.ok(t.includes('Inicio: disponible desde el lunes.'));
+  const sigla = datos({ disponibilidad: 'ART y matrícula al día' });
+  sigla.o.condiciones = ['Inicio: {inicio}.'];
+  assert.ok(texto(Plantillas.presupuestoCliente(sigla.d, sigla.o).html).includes('Inicio: ART y matrícula al día.'));
+});
+
+test('las horas con decimales se muestran con coma', () => {
+  const { d, o } = datos();
+  Object.assign(o.calendario, { horaInicio: '08:00', horaFin: '17:30' });
+  const t = texto(Plantillas.presupuestoCliente(d, o).html);
+  assert.ok(t.includes('Honorarios por jornada de 9,5 horas'));
+  assert.ok(t.includes('9,5 h × $ 13.000'));
+  assert.ok(!/\d\.\d h/.test(t));
+});

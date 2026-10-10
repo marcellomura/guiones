@@ -189,13 +189,15 @@ function vistaObra() {
     ${tab(o)}</div>`;
 }
 
-function faltantes(o) {
+// doc: 'cliente' para el presupuesto que se envía; sin totales no necesita la fecha de inicio.
+function faltantes(o, doc) {
   const p = S.datos.perfil, f = [];
   if (!p.nombre) f.push('tu nombre (Mi perfil)');
   if (!p.matricula) f.push('tu matrícula (Mi perfil)');
   if (!p.cuil) f.push('tu CUIL (Mi perfil)');
   if (!o.clienteId || !cliente(o.clienteId)) f.push('el cliente (Datos de la obra)');
-  if (!Calc.esFechaValida(o.calendario.inicio)) f.push('la fecha de inicio (Calendario)');
+  if (!Calc.esFechaValida(o.calendario.inicio) && (doc !== 'cliente' || o.presupuesto.mostrarTotales)) f.push('la fecha de inicio (Calendario)');
+  if (!(Calc.horasJornada(o.calendario) > 0)) f.push('el horario de la jornada (Calendario)');
   if (!(Calc.num(o.tarifas.valorHora) > 0)) f.push('el valor hora (Tarifas)');
   return f;
 }
@@ -231,7 +233,7 @@ function resumenHTML(o) {
 }
 
 function tabResumen(o) {
-  const f = faltantes(o);
+  const f = faltantes(o, 'cliente');
   const aviso = f.length
     ? `<div class="aviso">${ICON.alerta}<div><b>Antes de enviar el presupuesto, completá:</b><ul>${f.map((x) => `<li>${x}</li>`).join('')}</ul></div></div>`
     : `<div class="aviso ok">${ICON.ok}<div>Todo listo para generar el presupuesto. Los feriados del período ya están aplicados según la lista de <b>Feriados</b>.</div></div>`;
@@ -648,7 +650,7 @@ const ACCIONES = {
   pdf: async (el) => {
     const o = obra();
     const doc = el.dataset.doc;
-    const f = faltantes(o);
+    const f = faltantes(o, doc);
     if (f.length && !(await confirmar('Faltan datos', `Falta completar: ${f.join(', ')}. ¿Generar el PDF igual?`, 'Generar igual'))) return;
     let d;
     try {

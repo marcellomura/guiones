@@ -6,7 +6,8 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  const VERSION_DATOS = 1;
+  // 2: las condiciones usan {disponibilidad} en lugar de la fecha de inicio.
+  const VERSION_DATOS = 2;
 
   // Feriados de Argentina. Los trasladables de 2027 se publican por decreto: agregarlos cuando salgan.
   const FERIADOS = [
@@ -116,6 +117,7 @@
       { id: nuevoId(), razonSocial: '', cuit: '', domicilio: '', localidad: '', contacto: '', email: '', telefono: '' }, c)) : [];
     out.feriados = Array.isArray(d.feriados) ? d.feriados.filter((f) => f && f.fecha) : base.feriados;
     out.numeracion = Object.assign({ presupuesto: 1 }, d.numeracion || {});
+    const migrar = !(Number(d.version) >= 2); // una sola vez: después se respeta lo que escriba el usuario
     out.obras = Array.isArray(d.obras) ? d.obras.map((o) => {
       const plantilla = nuevaObra(out, '');
       const ob = Object.assign({}, plantilla, o);
@@ -124,7 +126,7 @@
       ob.calendario = Object.assign({}, plantilla.calendario, o.calendario || {});
       ob.tarifas = Object.assign({}, TARIFAS, o.tarifas || {});
       ob.servicios = Array.isArray(o.servicios) ? o.servicios : SERVICIOS.slice();
-      ob.condiciones = Array.isArray(o.condiciones) ? o.condiciones.map(migrarCondicion) : CONDICIONES.slice();
+      ob.condiciones = Array.isArray(o.condiciones) ? (migrar ? o.condiciones.map(migrarCondicion) : o.condiciones) : CONDICIONES.slice();
       ob.dias = o.dias && typeof o.dias === 'object' ? o.dias : {};
       ob.liquidaciones = o.liquidaciones && typeof o.liquidaciones === 'object' ? o.liquidaciones : {};
       return ob;

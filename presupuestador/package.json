@@ -1,7 +1,7 @@
 {
   "name": "presupuestador-hys",
   "productName": "Presupuestador HyS",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Presupuestos y liquidaciones mensuales en PDF para técnicos en Higiene y Seguridad",
   "main": "src/main.js",
   "author": "Presupuestador HyS",

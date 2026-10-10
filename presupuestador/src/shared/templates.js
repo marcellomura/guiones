@@ -120,7 +120,11 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
       disponibilidad: disponibilidad(obra),
     };
   }
-  function disponibilidad(obra) { return String((obra.presupuesto || {}).disponibilidad || '').trim() || 'Disponibilidad inmediata'; }
+  // Sin asteriscos ni punto final: la plantilla la pone en negrita y le agrega el punto.
+  function disponibilidad(obra) {
+    return String((obra.presupuesto || {}).disponibilidad || '').replace(/\*+/g, '').trim().replace(/[.\s]+$/, '') || 'Disponibilidad inmediata';
+  }
+  function horas(h) { return String(Math.round(Calc.num(h) * 100) / 100).replace('.', ','); }
   function conVariables(texto, vars) {
     return String(texto).replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
   }
@@ -178,10 +182,10 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
     const H = r.H;
     const filas = Calc.TIPOS.filter((k) => k === 'lv' || r.total.porTipo[k].jornadas > 0).map((k) => {
       const pt = r.total.porTipo[k];
-      return `<tr><td><b>${Calc.TIPO_PLURAL[k]}</b></td><td>${H} h × ${P(r.T.hora[k])}</td><td class="r">${P(r.jornada[k])}</td>
+      return `<tr><td><b>${Calc.TIPO_PLURAL[k]}</b></td><td>${horas(H)} h × ${P(r.T.hora[k])}</td><td class="r">${P(r.jornada[k])}</td>
         <td class="c">${pt.jornadas}</td><td class="r">${P(pt.honorarios)}</td></tr>`;
     });
-    filas.push(`<tr class="sum"><td>Total honorarios</td><td>${r.total.horas} h</td><td></td><td class="c">${r.total.jornadas}</td><td class="r">${P(r.total.honorarios)}</td></tr>`);
+    filas.push(`<tr class="sum"><td>Total honorarios</td><td>${horas(r.total.horas)} h</td><td></td><td class="c">${r.total.jornadas}</td><td class="r">${P(r.total.honorarios)}</td></tr>`);
     const t = obra.tarifas;
     if (Calc.num(t.viatico) > 0) {
       filas.push(t.viaticoProveeEmpresa
@@ -198,7 +202,7 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
   function preciosJornada(r, obra) {
     const t = obra.tarifas;
     const filas = [['lv', 'Lunes a viernes'], ['sab', 'Sábados'], ['dom', 'Domingos y feriados']].map(([k, nm]) =>
-      `<tr><td><b>${nm}</b></td><td>${r.H} h × ${P(r.T.hora[k])}</td><td class="r"><b>${P(r.jornada[k])}</b></td></tr>`);
+      `<tr><td><b>${nm}</b></td><td>${horas(r.H)} h × ${P(r.T.hora[k])}</td><td class="r"><b>${P(r.jornada[k])}</b></td></tr>`);
     if (Calc.num(t.viatico) > 0) {
       filas.push(`<tr><td><b>Viático de comida</b></td><td>Por jornada trabajada · ${t.viaticoProveeEmpresa ? 'la empresa provee la comida' : 'sin cargo si la empresa provee la comida'}</td>
         <td class="r"><b>${t.viaticoProveeEmpresa ? 'Sin cargo' : P(Calc.num(t.viatico))}</b></td></tr>`);
@@ -218,7 +222,7 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
     const conTotales = !!obra.presupuesto.mostrarTotales;
     const vars = variables(datos, obra, r);
     // Sin totales no se muestran fechas de obra, aunque un texto editado use {inicio} o {fin}.
-    if (!conTotales) Object.assign(vars, { inicio: vars.disponibilidad.charAt(0).toLowerCase() + vars.disponibilidad.slice(1), fin: 'según el avance de la obra' });
+    if (!conTotales) Object.assign(vars, { inicio: /^\p{Lu}\p{Ll}/u.test(vars.disponibilidad) ? vars.disponibilidad.charAt(0).toLowerCase() + vars.disponibilidad.slice(1) : vars.disponibilidad, fin: 'según el avance de la obra' });
     let h = encabezado(perfil, 'PRESUPUESTO', [
       `N° <b>${esc(obra.presupuesto.numero)}</b>`,
       `${esc(perfil.ciudad ? perfil.ciudad + ', ' : '')}<b>${obra.presupuesto.fecha ? Calc.fechaLarga(obra.presupuesto.fecha) : ''}</b>`,
@@ -227,12 +231,12 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
     const d1 = [cli.razonSocial && `<b>${esc(cli.razonSocial)}</b>`, cli.contacto && esc(cli.contacto)].filter(Boolean).join(' · ');
     const d2 = [obra.comitente && `Comitente: ${esc(obra.comitente)}`, obra.dotacion && `${esc(obra.dotacion)} operarios`].filter(Boolean).join(' · ');
     const cuando = conTotales && r.inicio ? `Inicio <b>${Calc.DIAS[Calc.diaSemana(r.inicio)]} ${Calc.fechaNum(r.inicio)}</b>` : `<b>${esc(disponibilidad(obra))}</b>`;
-    const d3 = `${cuando} · diagrama ${c.diasTrabajo} × ${c.diasDescanso} · ${hora(c.horaInicio)} a ${hora(c.horaFin)} h`;
+    const d3 = `${cuando} · diagrama ${c.diasTrabajo} × ${c.diasDescanso} · ${esc(hora(c.horaInicio))} a ${esc(hora(c.horaFin))} h`;
     h += `<div class="cards">${tarjetaProfesional(perfil)}<div class="card"><h3>Destinatario y obra</h3><div class="who4">${[d1, d2, d3].filter(Boolean).join('<br>')}</div></div></div>`;
     h += `<h2>Honorarios por hora</h2>${tablaTarifas(r, obra, false)}`;
     h += `<p class="small muted" style="margin:3px 0 0">Toda hora fuera del horario de ${esc(c.horaInicio)} a ${esc(c.horaFin)} se factura con el valor nocturno del día. Días no laborables: se cobran como día hábil.</p>`;
     if (conTotales) {
-      h += `<h2>Honorarios por jornada de ${r.H} horas${r.inicio ? ` · calendario real desde el ${fe(r.inicio)}` : ''}</h2>${filasJornadas(r, obra)}`;
+      h += `<h2>Honorarios por jornada de ${horas(r.H)} horas${r.inicio ? ` · calendario real desde el ${fe(r.inicio)}` : ''}</h2>${filasJornadas(r, obra)}`;
       const t = obra.tarifas;
       const sinViatico = !t.viaticoProveeEmpresa && r.total.viatico > 0
         ? `Con viático de comida. Si la empresa provee la comida: <b>${P(r.total.total - r.total.viatico)}</b>. ` : '';
@@ -243,7 +247,7 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
       const meses = r.meses.filter((m) => m.total > 0).map((m) => `${Calc.MESES[Number(m.mes.slice(5)) - 1]} ${P(m.total)}`).join(' · ');
       h += `<p class="small muted" style="margin:5px 0 0">${turnos ? `<b>Turnos:</b> ${turnos}. ` : ''}${fer.length ? `<b>Feriados trabajados:</b> ${lista(fer)}. ` : ''}${meses ? `<b>Facturación mensual estimada:</b> ${meses}.` : ''}</p>`;
     } else {
-      h += `<h2>Honorarios por jornada de ${r.H} horas y gastos</h2>${preciosJornada(r, obra)}`;
+      h += `<h2>Honorarios por jornada de ${horas(r.H)} horas y gastos</h2>${preciosJornada(r, obra)}`;
       const iva = textoIVA(perfil);
       h += `<p class="small muted" style="margin:3px 0 0">Se factura mensualmente según las jornadas y horas efectivamente trabajadas, de acuerdo con el parte de asistencia.${iva ? ` ${iva}` : ''}</p>`;
     }
@@ -299,7 +303,7 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
 
     h += `<h2><span class="n">1</span>Lo que se acordó</h2><table><thead><tr><th style="width:20%">Tema</th><th>Criterio</th></tr></thead><tbody>
       <tr><td><b>Inicio y plazo</b></td><td>${r.inicio ? `${Calc.diaYFecha(r.inicio)}/${r.inicio.slice(0, 4)}; ${c.duracionDias} días corridos hasta el ${Calc.diaYFecha(r.fin)}/${r.fin.slice(0, 4)}.` : 'Sin fecha de inicio.'}</td></tr>
-      <tr><td><b>Valor base</b></td><td>${P(T.base)} por hora diurna de lunes a viernes, de ${esc(c.horaInicio)} a ${esc(c.horaFin)} (jornada de ${r.H} h).</td></tr>
+      <tr><td><b>Valor base</b></td><td>${P(T.base)} por hora diurna de lunes a viernes, de ${esc(c.horaInicio)} a ${esc(c.horaFin)} (jornada de ${horas(r.H)} h).</td></tr>
       <tr><td><b>Recargos</b></td><td>Sábado ${Calc.porcentaje(T.rec.sab * 100)}; domingo y feriado ${Calc.porcentaje(T.rec.dom * 100)}; hora nocturna o fuera de horario ${Calc.porcentaje(T.noct * 100)}. Los recargos se suman.</td></tr>
       <tr><td><b>Viático</b></td><td>${Calc.num(t.viatico) > 0 ? `${P(Calc.num(t.viatico))} por jornada para comida${t.viaticoProveeEmpresa ? ': <b>la empresa provee la comida</b>, no se cobra' : '; no se cobra si la empresa la provee'}.` : 'No se cobra.'}</td></tr>
       <tr><td><b>Movilidad</b></td><td>${r.movilidadJornada > 0 ? `${P(r.movilidadJornada)} por jornada.` : 'No se cobra.'}</td></tr>
