@@ -96,6 +96,9 @@ test('la disponibilidad no duplica el punto ni rompe la negrita, y respeta sigla
   const sigla = datos({ disponibilidad: 'ART y matrícula al día' });
   sigla.o.condiciones = ['Inicio: {inicio}.'];
   assert.ok(texto(Plantillas.presupuestoCliente(sigla.d, sigla.o).html).includes('Inicio: ART y matrícula al día.'));
+  const corta = datos({ disponibilidad: 'A convenir con la empresa' });
+  corta.o.condiciones = ['Inicio: {inicio}.'];
+  assert.ok(texto(Plantillas.presupuestoCliente(corta.d, corta.o).html).includes('Inicio: a convenir con la empresa.'));
 });
 
 test('las horas con decimales se muestran con coma', () => {
@@ -105,4 +108,8 @@ test('las horas con decimales se muestran con coma', () => {
   assert.ok(t.includes('Honorarios por jornada de 9,5 horas'));
   assert.ok(t.includes('9,5 h × $ 13.000'));
   assert.ok(!/\d\.\d h/.test(t));
+  const det = texto(Plantillas.presupuestoDetallado(d, o).html);
+  assert.ok(!/\d\.\d+ h\b/.test(det), 'el detallado usa el mismo formato en todas las horas');
+  assert.equal(Calc.horas(424.9999999999997), '425');
+  assert.equal(Calc.horas(8.333333), '8,33');
 });

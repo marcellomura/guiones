@@ -124,7 +124,7 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
   function disponibilidad(obra) {
     return String((obra.presupuesto || {}).disponibilidad || '').replace(/\*+/g, '').trim().replace(/[.\s]+$/, '') || 'Disponibilidad inmediata';
   }
-  function horas(h) { return String(Math.round(Calc.num(h) * 100) / 100).replace('.', ','); }
+  const horas = Calc.horas;
   function conVariables(texto, vars) {
     return String(texto).replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
   }
@@ -222,7 +222,7 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
     const conTotales = !!obra.presupuesto.mostrarTotales;
     const vars = variables(datos, obra, r);
     // Sin totales no se muestran fechas de obra, aunque un texto editado use {inicio} o {fin}.
-    if (!conTotales) Object.assign(vars, { inicio: /^\p{Lu}\p{Ll}/u.test(vars.disponibilidad) ? vars.disponibilidad.charAt(0).toLowerCase() + vars.disponibilidad.slice(1) : vars.disponibilidad, fin: 'según el avance de la obra' });
+    if (!conTotales) Object.assign(vars, { inicio: /^\p{Lu}[\p{Lu}\d]/u.test(vars.disponibilidad) ? vars.disponibilidad : vars.disponibilidad.charAt(0).toLowerCase() + vars.disponibilidad.slice(1), fin: 'según el avance de la obra' });
     let h = encabezado(perfil, 'PRESUPUESTO', [
       `N° <b>${esc(obra.presupuesto.numero)}</b>`,
       `${esc(perfil.ciudad ? perfil.ciudad + ', ' : '')}<b>${obra.presupuesto.fecha ? Calc.fechaLarga(obra.presupuesto.fecha) : ''}</b>`,
@@ -350,7 +350,7 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
       ${ejemplos.map((e) => `<tr><td>${e[0]}</td><td>${e[1]}</td><td class="r">${e[2]}</td></tr>`).join('')}</tbody></table>`;
 
     const ref = Calc.num(t.valorReferencia);
-    h += `<h2><span class="n">6</span>Control</h2><div class="note">El <b>promedio por hora de la obra es ${P(r.promedioHora)}</b> (${P(r.total.honorarios)} ÷ ${r.total.horas} h)${ref > 0 ? `, ${r.promedioHora >= ref ? 'por encima' : 'por debajo'} del valor de referencia de ${P(ref)} por hora` : ''}.
+    h += `<h2><span class="n">6</span>Control</h2><div class="note">El <b>promedio por hora de la obra es ${P(r.promedioHora)}</b> (${P(r.total.honorarios)} ÷ ${horas(r.total.horas)} h)${ref > 0 ? `, ${r.promedioHora >= ref ? 'por encima' : 'por debajo'} del valor de referencia de ${P(ref)} por hora` : ''}.
       ${!t.viaticoProveeEmpresa && r.total.viatico > 0 ? ` Si la empresa provee la comida, el total baja a ${P(r.total.total - r.total.viatico)}.` : ''}</div>`;
     return {
       html: documento(`Presupuesto detallado ${obra.presupuesto.numero}`, h),
@@ -386,8 +386,8 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
       const est = { trabajado: '', susp_aviso: 'susp. con aviso', susp_parcial: 'susp. · 50 %', susp_total: 'susp. · 100 %' }[d.estado] || '';
       const tipo = Calc.TIPO_NOMBRE[d.tipo].replace('Lunes a viernes', 'Hábil');
       return `<tr class="${d.factor === 0 ? 'off' : ''}"><td>${Calc.fechaNum(d.fecha)}</td><td style="text-transform:capitalize">${Calc.DIAS[Calc.diaSemana(d.fecha)]}</td>
-        <td>${tipo}${est ? ` <span class="muted">(${est})</span>` : ''}</td><td class="c">${d.horas || '—'}</td><td class="r">${P(d.valorHora)}</td>
-        <td class="r">${P(d.honorarios)}</td><td class="c">${d.extraHoras || '—'}</td><td class="r">${d.extraImporte ? P(d.extraImporte) : '—'}</td>
+        <td>${tipo}${est ? ` <span class="muted">(${est})</span>` : ''}</td><td class="c">${d.horas ? horas(d.horas) : '—'}</td><td class="r">${P(d.valorHora)}</td>
+        <td class="r">${P(d.honorarios)}</td><td class="c">${d.extraHoras ? horas(d.extraHoras) : '—'}</td><td class="r">${d.extraImporte ? P(d.extraImporte) : '—'}</td>
         <td class="r">${d.viatico + d.movilidad ? P(d.viatico + d.movilidad) : '—'}</td><td class="r"><b>${P(d.total)}</b></td></tr>`;
     }).join('');
     h += `<h2>Detalle de jornadas</h2><table class="det"><thead><tr><th>Fecha</th><th>Día</th><th>Tipo</th><th class="c">Horas</th><th class="r">Valor hora</th>
@@ -396,9 +396,9 @@ body.compacto .title { margin: 6px 0 5px; } body.compacto .conds li { margin-bot
 
     const res = Calc.TIPOS.filter((k) => m.porTipo[k].jornadas > 0).map((k) => {
       const pt = m.porTipo[k];
-      return `<tr><td>${Calc.TIPO_PLURAL[k]}</td><td class="c">${pt.jornadas}</td><td class="c">${pt.horas}</td><td class="r">${P(r.T.hora[k])}</td><td class="r">${P(pt.honorarios)}</td></tr>`;
+      return `<tr><td>${Calc.TIPO_PLURAL[k]}</td><td class="c">${pt.jornadas}</td><td class="c">${horas(pt.horas)}</td><td class="r">${P(r.T.hora[k])}</td><td class="r">${P(pt.honorarios)}</td></tr>`;
     });
-    if (m.extraHoras) res.push(`<tr><td>Horas nocturnas o fuera de horario</td><td class="c">—</td><td class="c">${m.extraHoras}</td><td class="r">—</td><td class="r">${P(m.extraImporte)}</td></tr>`);
+    if (m.extraHoras) res.push(`<tr><td>Horas nocturnas o fuera de horario</td><td class="c">—</td><td class="c">${horas(m.extraHoras)}</td><td class="r">—</td><td class="r">${P(m.extraImporte)}</td></tr>`);
     if (m.viatico) res.push(`<tr><td>Viático de comida</td><td class="c">${m.jornadas}</td><td class="c">—</td><td class="r">${P(r.viaticoJornada)}</td><td class="r">${P(m.viatico)}</td></tr>`);
     if (m.movilidad) res.push(`<tr><td>Movilidad</td><td class="c">${m.jornadas}</td><td class="c">—</td><td class="r">${P(r.movilidadJornada)}</td><td class="r">${P(m.movilidad)}</td></tr>`);
     h += `<h2>Resumen del período</h2><table><thead><tr><th>Concepto</th><th class="c" style="width:12%">Jornadas</th><th class="c" style="width:10%">Horas</th>

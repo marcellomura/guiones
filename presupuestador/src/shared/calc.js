@@ -62,6 +62,8 @@
     return (neg ? '−' : '') + s;
   }
   function pesos(n) { return (n < 0 ? '− ' : '') + '$ ' + miles(Math.abs(n)); }
+  // Horas con hasta dos decimales y coma decimal: 12 → '12', 9.5 → '9,5'.
+  function horas(h) { return String(Math.round(num(h) * 100) / 100).replace('.', ','); }
   function porcentaje(x) { return (x > 0 ? '+' : '') + String(Math.round(x * 10) / 10).replace('.', ',') + ' %'; }
 
   const UNIDADES = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez',
@@ -276,7 +278,7 @@
   return {
     TIPOS, TIPO_NOMBRE, TIPO_PLURAL, DIAS, DIAS_LETRA, MESES, ESTADOS, FACTOR,
     parse, iso, sumarDias, diaSemana, esFechaValida, fechaCorta, fechaNum, fechaLarga, diaYFecha, nombreMes, hoyISO,
-    num, miles, pesos, porcentaje, enLetras, pesosEnLetras,
+    num, miles, pesos, horas, porcentaje, enLetras, pesosEnLetras,
     horasJornada, tarifas, indiceFeriados, construirDias, calcular, turnoTipo,
   };
 });

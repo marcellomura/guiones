@@ -164,7 +164,7 @@ function vistaObras() {
         ${r.inicio ? `<span class="muted num">${Calc.fechaNum(r.inicio)} al ${Calc.fechaNum(r.fin)}</span>` : ''}</div>
       <h3>${esc(o.nombre || 'Obra sin nombre')}</h3>
       <div class="meta">${esc(c ? c.razonSocial : 'Sin cliente')}${o.lugar ? ` · ${esc(o.lugar)}` : ''}<br>
-        ${r.total.jornadas} jornadas · ${r.total.horas} h · ${P(r.T.base)} la hora base</div>
+        ${r.total.jornadas} jornadas · ${Calc.horas(r.total.horas)} h · ${P(r.T.base)} la hora base</div>
       <div class="monto">${P(r.total.total)}</div>
       <div class="pie"><button class="btn chico" data-accion="duplicar-obra" data-id="${o.id}">${ICON.copiar}Duplicar</button>
         <button class="btn chico peligro" data-accion="borrar-obra" data-id="${o.id}">${ICON.borrar}Eliminar</button></div></div>`;
@@ -205,7 +205,7 @@ function faltantes(o, doc) {
 function tablaTarifasUI(r, o) {
   const fila = (k, nm) => `<tr><td><b>${nm}</b></td><td class="r precio-grande">${P(r.T.hora[k])}</td><td class="r precio-grande">${P(r.T.horaNoct[k])}</td><td class="r">${P(r.jornada[k])}</td></tr>`;
   return `<table class="t"><thead><tr><th>Día</th><th class="r">Hora diurna (${esc(o.calendario.horaInicio)} a ${esc(o.calendario.horaFin)})</th>
-    <th class="r">Hora nocturna / fuera de horario</th><th class="r">Jornada de ${r.H} h</th></tr></thead><tbody>
+    <th class="r">Hora nocturna / fuera de horario</th><th class="r">Jornada de ${Calc.horas(r.H)} h</th></tr></thead><tbody>
     ${fila('lv', 'Lunes a viernes')}${fila('sab', 'Sábados')}${fila('dom', 'Domingos y feriados')}</tbody></table>`;
 }
 
@@ -215,7 +215,7 @@ function resumenHTML(o) {
   const sinComida = !t.viaticoProveeEmpresa && r.total.viatico > 0 ? r.total.total - r.total.viatico : null;
   let h = `<div class="kpis">
     <div class="kpi destacado"><div class="l">Total estimado</div><div class="v">${P(r.total.total)}</div><div class="s">${sinComida != null ? `${P(sinComida)} si proveen la comida` : 'Honorarios y gastos'}</div></div>
-    <div class="kpi"><div class="l">Jornadas</div><div class="v">${r.total.jornadas}</div><div class="s">${r.total.horas} horas${r.inicio ? ` · ${Calc.fechaCorta(r.inicio)} al ${Calc.fechaCorta(r.fin)}` : ''}</div></div>
+    <div class="kpi"><div class="l">Jornadas</div><div class="v">${r.total.jornadas}</div><div class="s">${Calc.horas(r.total.horas)} horas${r.inicio ? ` · ${Calc.fechaCorta(r.inicio)} al ${Calc.fechaCorta(r.fin)}` : ''}</div></div>
     <div class="kpi"><div class="l">Promedio por hora</div><div class="v">${P(r.promedioHora)}</div><div class="s">${Calc.num(t.valorReferencia) > 0 ? `Referencia ${P(Calc.num(t.valorReferencia))}` : 'Con recargos incluidos'}</div></div>
     <div class="kpi"><div class="l">Feriados trabajados</div><div class="v">${r.total.porTipo.fer.jornadas}</div><div class="s">${r.total.porTipo.dom.jornadas} domingos · ${r.total.porTipo.sab.jornadas} sábados</div></div></div>`;
   h += `<div class="grid g2"><div class="tarjeta"><h3>Honorarios por hora</h3>${tablaTarifasUI(r, o)}</div>
@@ -320,7 +320,7 @@ function mesesHTML(o) {
       if (!di) { h += `<button class="dia fuera" disabled>${d}</button>`; continue; }
       const et = etiquetaDia(di);
       h += `<button class="${clasesDia(di, hoy)}" data-accion="dia" data-fecha="${f}" title="${esc(di.feriado ? di.feriado.nombre : Calc.TIPO_NOMBRE[di.tipo])}">
-        ${d}${et ? `<small>${et}</small>` : di.extraHoras ? `<small>+${di.extraHoras} h</small>` : ''}${di.extraHoras ? '<span class="extra"></span>' : ''}</button>`;
+        ${d}${et ? `<small>${et}</small>` : di.extraHoras ? `<small>+${Calc.horas(di.extraHoras)} h</small>` : ''}${di.extraHoras ? '<span class="extra"></span>' : ''}</button>`;
     }
     h += '</div></div>';
   }
@@ -337,7 +337,7 @@ function resumenCal(o) {
     <span class="chip"><i style="background:#C0392B"></i>${p.fer.jornadas} feriados</span>
     <span class="chip"><i style="background:#E9EAEE"></i>${desc} sin trabajo</span>
     ${r.total.susp ? `<span class="chip">${r.total.susp} suspendidos</span>` : ''}
-    ${r.total.extraHoras ? `<span class="chip">${r.total.extraHoras} h nocturnas</span>` : ''}
+    ${r.total.extraHoras ? `<span class="chip">${Calc.horas(r.total.extraHoras)} h nocturnas</span>` : ''}
     <span class="chip">Total real ${P(r.total.total)}</span></div>`;
 }
 function panelDia(o) {
@@ -371,8 +371,8 @@ function importeDiaHTML(o) {
   const d = r.dias.find((x) => x.fecha === S.diaSel);
   if (!d) return '';
   const det = [];
-  if (d.honorarios) det.push(`${d.horas} h × ${P(d.valorHora)}`);
-  if (d.extraImporte) det.push(`${d.extraHoras} h × ${P(d.valorHoraNoct)}`);
+  if (d.honorarios) det.push(`${Calc.horas(d.horas)} h × ${P(d.valorHora)}`);
+  if (d.extraImporte) det.push(`${Calc.horas(d.extraHoras)} h × ${P(d.valorHoraNoct)}`);
   if (d.viatico) det.push(`viático ${P(d.viatico)}`);
   if (d.movilidad) det.push(`movilidad ${P(d.movilidad)}`);
   return `<div class="muted" style="font-size:12px">Importe del día</div><div class="importe">${P(d.total)}</div><div class="muted" style="font-size:12px">${det.join(' + ') || 'No se cobra'}</div>`;
@@ -405,7 +405,7 @@ function tabLiquidaciones(o) {
     o.liquidaciones = o.liquidaciones || {};
     if (!o.liquidaciones[m.mes]) o.liquidaciones[m.mes] = {};
     h += `<div class="tarjeta"><div class="liq">
-      <div><div class="mesnom">${Calc.nombreMes(m.mes)}</div><div class="muted">${m.jornadas} jornadas · ${m.horas} h${m.extraHoras ? ` · ${m.extraHoras} h nocturnas` : ''}${m.susp ? ` · ${m.susp} suspendidos` : ''}</div>
+      <div><div class="mesnom">${Calc.nombreMes(m.mes)}</div><div class="muted">${m.jornadas} jornadas · ${Calc.horas(m.horas)} h${m.extraHoras ? ` · ${Calc.horas(m.extraHoras)} h nocturnas` : ''}${m.susp ? ` · ${m.susp} suspendidos` : ''}</div>
         <div class="tot">${P(m.total)}</div></div>
       <div class="grid g3">
         ${campo('Fecha de emisión', `${pre}.fechaEmision`, { tipo: 'date', ayuda: 'Vacío = fecha del día.' })}
@@ -531,7 +531,7 @@ const VIVOS = {
   'cal-resumen': () => resumenCal(obra()),
   'importe-dia': () => importeDiaHTML(obra()),
   'panel-dia': () => panelDia(obra()),
-  horas: () => String(Calc.horasJornada(obra().calendario)),
+  horas: () => Calc.horas(Calc.horasJornada(obra().calendario)),
   'fin-obra': () => {
     const r = Calc.calcular(obra(), S.datos.feriados, { modo: 'presupuesto' });
     return r.fin ? `Termina el ${Calc.diaYFecha(r.fin)}/${r.fin.slice(0, 4)}` : '';
