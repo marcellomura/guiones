@@ -2,6 +2,8 @@
 
 Asesoría de imagen streetwear / surf-skate con compra inteligente, armada sobre tus medidas exactas.
 
+> **¿Presupuesto ajustado?** Mirá la [cápsula económica por menos de $200.000](capsula-economica-200k.md), con las mismas prendas sin contar las zapatillas.
+
 > **Relevamiento:** precios, stock y tablas de talles revisados en las webs oficiales el **24/10/2026**. El stock de talles chicos (S, 39 AR) se mueve rápido: si algo te gusta, comprálo antes de fin de noviembre para tener margen de cambio antes de enero.
 
 ---
