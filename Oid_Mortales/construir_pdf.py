@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
-"""Arma el PDF del guion a partir de los archivos de guion/*.fountain.
+"""Arma los PDF del guion a partir de los archivos de guion/*.fountain.
 
 Uso:
-    python3 construir_pdf.py            # genera OID_MORTALES_guion.pdf
+    python3 construir_pdf.py            # genera las dos versiones
     python3 construir_pdf.py --paginas  # además imprime en qué página cae cada capítulo
+
+Versiones:
+    OID_MORTALES_guion.pdf        formato de guion estándar, con portada y autor.
+    OID_MORTALES_guion_INCAA.pdf  formato que piden las bases de los concursos del INCAA
+                                  (Courier 12, márgenes de 2,5 cm, diálogos con 5 cm de
+                                  margen, escenas numeradas, todo alineado a la izquierda)
+                                  y anónimo: solo figura el título de la obra.
 
 Formato de los archivos fuente (Fountain reducido):
     INT. / EXT. ...        encabezado de escena
@@ -26,29 +33,68 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
-SALIDA = os.path.join(AQUI, "OID_MORTALES_guion.pdf")
 
 TITULO = "OÍD MORTALES"
 AUTOR = "Marcello Muratore"
 
 # --- Medidas (puntos). Courier 12: 10 caracteres por pulgada, 6 líneas por pulgada.
 ANCHO, ALTO = A4
+CM = 72 / 2.54
 CAR = 7.2
 RENGLON = 12.0
-IZQ = 108.0                      # margen izquierdo: 1,5 pulgadas
-PRIMER_RENGLON = ALTO - 72 - 10  # margen superior: 1 pulgada
-RENGLONES = 58                   # renglones útiles por página (A4, 1 pulgada arriba y abajo)
-COLS = 60                        # ancho de la acción, en caracteres
 
-SANGRIA = {"dialogo": 10, "personaje": 22, "acotacion": 16}
-ANCHO_DE = {"dialogo": 35, "acotacion": 25}
-
-FUENTES = {
-    (False, False): "CP",
-    (True, False): "CP-B",
-    (False, True): "CP-I",
-    (True, True): "CP-BI",
+PERFILES = {
+    "estandar": {
+        "salida": "OID_MORTALES_guion.pdf",
+        "izq": 108.0,                 # margen izquierdo: 1,5 pulgadas
+        "arriba": 72.0,               # margen superior: 1 pulgada
+        "renglones": 58,              # renglones útiles por página
+        "cols": 60,                   # ancho de la acción, en caracteres
+        "sangria": {"dialogo": 10, "personaje": 22, "acotacion": 16},
+        "ancho": {"dialogo": 35, "acotacion": 25},
+        "fuentes": ("CP", "CP-B", "CP-I", "CP-BI"),
+        "incaa": False,
+    },
+    # Bases INCAA (Ópera Prima 2026, Anexo I-A, punto B.1.a): Courier 12, interlineado
+    # sencillo, 2,5 cm arriba y abajo, 2,5 cm a los lados para encabezados y acción,
+    # 5 cm a los lados para los diálogos (unos 40 caracteres), escenas y páginas
+    # numeradas, todo alineado a la izquierda y sin datos de productor ni director.
+    "incaa": {
+        "salida": "OID_MORTALES_guion_INCAA.pdf",
+        "izq": 2.5 * CM,
+        "arriba": 2.5 * CM,
+        "renglones": 58,
+        "cols": 62,
+        "sangria": {"dialogo": 10, "personaje": 10, "acotacion": 10},
+        "ancho": {"dialogo": 42, "acotacion": 42},
+        "fuentes": ("Courier", "Courier-Bold", "Courier-Oblique", "Courier-BoldOblique"),
+        "incaa": True,
+    },
 }
+
+# Valores del perfil en uso (los fija usar()).
+SALIDA = IZQ = PRIMER_RENGLON = RENGLONES = COLS = SANGRIA = ANCHO_DE = FUENTES = None
+INCAA = False
+
+
+def usar(nombre):
+    global SALIDA, IZQ, PRIMER_RENGLON, RENGLONES, COLS, SANGRIA, ANCHO_DE, FUENTES, INCAA
+    p = PERFILES[nombre]
+    SALIDA = os.path.join(AQUI, p["salida"])
+    IZQ = p["izq"]
+    PRIMER_RENGLON = ALTO - p["arriba"] - 10
+    RENGLONES = p["renglones"]
+    COLS = p["cols"]
+    SANGRIA = p["sangria"]
+    ANCHO_DE = p["ancho"]
+    normal, negrita, cursiva, ambas = p["fuentes"]
+    FUENTES = {
+        (False, False): normal,
+        (True, False): negrita,
+        (False, True): cursiva,
+        (True, True): ambas,
+    }
+    INCAA = p["incaa"]
 
 
 def registrar_fuentes():
@@ -211,6 +257,45 @@ def leer(rutas):
     return bloques
 
 
+# --- Encabezados para el INCAA: siempre INT./EXT., lugar y DÍA o NOCHE
+
+FRANJA_DE = {
+    "TARDE": "DÍA",
+    "ATARDECER": "DÍA",
+    "AMANECER": "DÍA",
+    "MAÑANA": "DÍA",
+    "MADRUGADA": "NOCHE",
+}
+SECUENCIAS = {
+    "SECUENCIA - LA MÁQUINA":
+        "INT. / EXT. GALPÓN Y CASA BENVENUTO - DÍA / NOCHE (SECUENCIA: LA MÁQUINA)",
+    "SECUENCIA - LAS ÚLTIMAS":
+        "INT. GALPÓN DEL FONDO - NOCHE / DÍA (SECUENCIA: LAS ÚLTIMAS)",
+}
+
+
+def encabezado_incaa(texto, anterior):
+    """Devuelve el encabezado con DÍA o NOCHE explícitos y la franja que queda vigente."""
+    t = texto.upper()
+    if t in SECUENCIAS:
+        return SECUENCIAS[t], anterior
+    lugar, _, cola = t.rpartition(" - ")
+    extra = ""
+    if cola.endswith(")") and " (" in cola:        # p. ej. «AMANECER (EN MOVIMIENTO)»
+        cola, _, extra = cola.partition(" (")
+        extra = extra[:-1]
+    if cola in ("DÍA", "NOCHE"):
+        franja, matiz = cola, ""
+    elif cola in FRANJA_DE:
+        franja, matiz = FRANJA_DE[cola], cola
+    elif cola in ("CONTINUO", "MÁS TARDE"):
+        franja, matiz = anterior, cola
+    else:
+        raise ValueError("Encabezado sin DÍA/NOCHE reconocible: %s" % texto)
+    notas = ", ".join(x for x in (matiz, extra) if x)
+    return "%s - %s%s" % (lugar, franja, " (%s)" % notas if notas else ""), franja
+
+
 # --- Paginado
 
 FIN_DE_ORACION = (".", "!", "?", "…", "»", ":", ")")
@@ -274,6 +359,8 @@ class Paginador:
         self.fila = 0
         self.marcas = []          # (título de capítulo, índice de página)
         self.pendiente = None
+        self.escenas = 0
+        self.franja = "DÍA"
 
     def nueva(self):
         self.paginas.append([])
@@ -296,6 +383,10 @@ class Paginador:
     # cada bloque -------------------------------------------------------
 
     def escena(self, texto, siguiente=None):
+        self.escenas += 1
+        if INCAA:
+            texto, self.franja = encabezado_incaa(texto, self.franja)
+            texto = "%d. %s" % (self.escenas, texto)
         lineas = partir(estilar(texto.upper(), negrita=True), COLS)
         antes = 2 if self.fila > 0 else 0
         quedan = self.libres() - antes - len(lineas)
@@ -370,7 +461,7 @@ class Paginador:
             self.nueva()
             antes = 0
         self.aire(antes)
-        self.poner(COLS - len(linea), linea)
+        self.poner(0 if INCAA else COLS - len(linea), linea)
 
     def centrado(self, texto):
         lineas = partir(estilar(texto), COLS)
@@ -380,7 +471,7 @@ class Paginador:
             antes = 0
         self.aire(antes)
         for l in lineas:
-            self.poner((COLS - len(l)) / 2.0, l)
+            self.poner(0 if INCAA else (COLS - len(l)) / 2.0, l)
 
 
 def paginar(bloques):
@@ -414,6 +505,22 @@ def paginar(bloques):
 
 # --- Dibujo
 
+EPIGRAFES = (
+    (
+        ("«Oíd el ruido de rotas cadenas,", "ved en trono a la noble igualdad.»"),
+        "Himno Nacional Argentino, 1813",
+    ),
+    (
+        (
+            "«…para nosotros, para nuestra posteridad,",
+            "y para todos los hombres del mundo",
+            "que quieran habitar en el suelo argentino.»",
+        ),
+        "Preámbulo de la Constitución Nacional, 1853",
+    ),
+)
+
+
 def dibujar_linea(c, x, y, linea, cuerpo=12):
     k, n = 0, len(linea)
     escala = cuerpo / 12.0
@@ -432,65 +539,60 @@ def dibujar_linea(c, x, y, linea, cuerpo=12):
         k = j
 
 
-def centrar(c, y, texto, fuente="CP", cuerpo=12):
+def centrar(c, y, texto, fuente, cuerpo=12):
     c.setFont(fuente, cuerpo)
     c.drawCentredString(ANCHO / 2.0, y, texto)
 
 
+def dibujar_epigrafes(c, y):
+    normal, cursiva = FUENTES[(False, False)], FUENTES[(False, True)]
+    for versos, fuente_cita in EPIGRAFES:
+        for renglon in versos:
+            centrar(c, y, renglon, cursiva, 12)
+            y -= 16
+        y -= 6
+        centrar(c, y, fuente_cita, normal, 10)
+        y -= 70
+
+
 def portada(c):
+    normal, negrita = FUENTES[(False, False)], FUENTES[(True, False)]
     y = ALTO * 0.62
-    centrar(c, y, TITULO, "CP-B", 26)
+    centrar(c, y, TITULO, negrita, 26)
     c.setLineWidth(1.1)
     medio = ANCHO / 2.0
     c.line(medio - 118, y - 12, medio + 118, y - 12)
-    centrar(c, y - 62, "guion original de")
-    centrar(c, y - 88, AUTOR, "CP-B", 14)
-    c.setFont("CP", 11)
+    if INCAA:
+        # Concurso anónimo: en la carpeta solo puede figurar el nombre de la obra.
+        dibujar_epigrafes(c, y - 150)
+        c.showPage()
+        return
+    centrar(c, y - 62, "guion original de", normal)
+    centrar(c, y - 88, AUTOR, negrita, 14)
+    c.setFont(normal, 11)
     c.drawString(IZQ, 96, "Largometraje de ficción")
     c.drawString(IZQ, 82, "Ópera prima")
     c.drawRightString(IZQ + COLS * CAR, 96, "Primera versión")
     c.drawRightString(IZQ + COLS * CAR, 82, "Noviembre de 2026")
     c.showPage()
-
-
-def epigrafes(c):
-    y = ALTO * 0.66
-    for renglon in (
-        "«Oíd el ruido de rotas cadenas,",
-        "ved en trono a la noble igualdad.»",
-    ):
-        centrar(c, y, renglon, "CP-I", 12)
-        y -= 16
-    y -= 6
-    centrar(c, y, "Himno Nacional Argentino, 1813", "CP", 10)
-    y -= 70
-    for renglon in (
-        "«…para nosotros, para nuestra posteridad,",
-        "y para todos los hombres del mundo",
-        "que quieran habitar en el suelo argentino.»",
-    ):
-        centrar(c, y, renglon, "CP-I", 12)
-        y -= 16
-    y -= 6
-    centrar(c, y, "Preámbulo de la Constitución Nacional, 1853", "CP", 10)
+    dibujar_epigrafes(c, ALTO * 0.66)
     c.showPage()
 
 
-def construir(mostrar_paginas=False):
-    registrar_fuentes()
+def construir(perfil, mostrar_paginas=False):
+    usar(perfil)
     rutas = sorted(glob.glob(os.path.join(AQUI, "guion", "*.fountain")))
     if not rutas:
         sys.exit("No hay archivos en guion/*.fountain")
     p = paginar(leer(rutas))
 
-    c = canvas.Canvas(SALIDA, pagesize=A4)
+    c = canvas.Canvas(SALIDA, pagesize=A4, initialFontName=FUENTES[(False, False)])
     c.setTitle("Oíd mortales")
-    c.setAuthor(AUTOR)
     c.setSubject("Guion de largometraje")
     c.setCreator("construir_pdf.py")
+    c.setAuthor("" if INCAA else AUTOR)       # la versión para concursos es anónima
 
     portada(c)
-    epigrafes(c)
 
     marcas = {}
     for titulo, indice in p.marcas:
@@ -502,17 +604,19 @@ def construir(mostrar_paginas=False):
             clave = "cap%d_%d" % (indice, len(titulo))
             c.bookmarkPage(clave)
             c.addOutlineEntry(titulo, clave, level=0)
-        if numero > 1:
-            c.setFont("CP", 12)
+        if numero > 1 or INCAA:               # el INCAA pide todas las páginas numeradas
+            c.setFont(FUENTES[(False, False)], 12)
             c.drawRightString(IZQ + COLS * CAR, ALTO - 44, "%d." % numero)
         for fila, sangria, linea in pagina:
             dibujar_linea(c, IZQ + sangria * CAR, PRIMER_RENGLON - fila * RENGLON, linea)
         c.showPage()
     c.save()
 
-    print("%s: %d páginas de guion (+ portada y epígrafes)" % (os.path.basename(SALIDA), len(p.paginas)))
+    extra = "portada" if INCAA else "portada y epígrafes"
+    print("%s: %d páginas de guion (+ %s), %d escenas" % (
+        os.path.basename(SALIDA), len(p.paginas), extra, p.escenas))
     ultimo = p.paginas[-1][-1][0] + 1 if p.paginas[-1] else 0
-    print("última página: %d de %d renglones" % (ultimo, RENGLONES))
+    print("  última página: %d de %d renglones" % (ultimo, RENGLONES))
     if mostrar_paginas:
         for titulo, indice in p.marcas:
             print("  p. %3d  %s" % (indice + 1, titulo))
@@ -520,4 +624,6 @@ def construir(mostrar_paginas=False):
 
 
 if __name__ == "__main__":
-    construir(mostrar_paginas="--paginas" in sys.argv)
+    registrar_fuentes()
+    for perfil in ("estandar", "incaa"):
+        construir(perfil, mostrar_paginas="--paginas" in sys.argv)
