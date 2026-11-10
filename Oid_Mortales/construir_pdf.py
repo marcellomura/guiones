@@ -37,7 +37,7 @@ CAR = 7.2
 RENGLON = 12.0
 IZQ = 108.0                      # margen izquierdo: 1,5 pulgadas
 PRIMER_RENGLON = ALTO - 72 - 10  # margen superior: 1 pulgada
-RENGLONES = 56                   # renglones útiles por página
+RENGLONES = 58                   # renglones útiles por página (A4, 1 pulgada arriba y abajo)
 COLS = 60                        # ancho de la acción, en caracteres
 
 SANGRIA = {"dialogo": 10, "personaje": 22, "acotacion": 16}
@@ -213,6 +213,61 @@ def leer(rutas):
 
 # --- Paginado
 
+FIN_DE_ORACION = (".", "!", "?", "…", "»", ":", ")")
+
+
+def cierra_oracion(linea):
+    return plano(linea).rstrip().endswith(FIN_DE_ORACION)
+
+
+def renglones_de_accion(duras):
+    lineas = []
+    for d in duras:
+        lineas.extend(partir(estilar(d), COLS))
+    return lineas
+
+
+def renglones_de_dialogo(partes):
+    lineas = []
+    for tipo, texto in partes:
+        if tipo == "acotacion":
+            for l in partir(estilar(texto), ANCHO_DE["acotacion"]):
+                lineas.append(("acotacion", l))
+        elif tipo == "verso":
+            for l in partir(estilar(texto, cursiva=True), ANCHO_DE["dialogo"]):
+                lineas.append(("dialogo", l))
+        else:
+            for l in partir(estilar(texto), ANCHO_DE["dialogo"]):
+                lineas.append(("dialogo", l))
+    return lineas
+
+
+def tanda_de_accion(lineas, libres, antes):
+    """Cuántos renglones de un párrafo de acción entran en lo que queda de página."""
+    total = len(lineas)
+    if antes + total <= libres:
+        return total
+    caben = min(libres - antes, total - 2)   # nunca dejar un renglón suelto
+    if caben < 2:
+        return 0
+    for k in range(caben, 1, -1):            # mejor cortar donde termina una oración
+        if cierra_oracion(lineas[k - 1]):
+            return k
+    return caben
+
+
+def tanda_de_dialogo(lineas, libres, antes):
+    """Ídem para un parlamento: solo se parte donde termina una oración."""
+    if antes + 1 + len(lineas) <= libres:
+        return len(lineas)
+    maximo = libres - antes - 2              # personaje + (MÁS)
+    for k in range(min(maximo, len(lineas) - 2), 1, -1):
+        tipo, linea = lineas[k - 1]
+        if tipo == "dialogo" and cierra_oracion(linea):
+            return k
+    return 0
+
+
 class Paginador:
     def __init__(self):
         self.paginas = [[]]
@@ -227,11 +282,11 @@ class Paginador:
     def libres(self):
         return RENGLONES - self.fila
 
-    def poner(self, sangria, linea, alinear="izq"):
+    def poner(self, sangria, linea):
         if self.pendiente is not None:
             self.marcas.append((self.pendiente, len(self.paginas) - 1))
             self.pendiente = None
-        self.paginas[-1].append((self.fila, sangria, linea, alinear))
+        self.paginas[-1].append((self.fila, sangria, linea))
         self.fila += 1
 
     def aire(self, renglones):
@@ -240,92 +295,73 @@ class Paginador:
 
     # cada bloque -------------------------------------------------------
 
-    def escena(self, texto, sigue=2):
+    def escena(self, texto, siguiente=None):
         lineas = partir(estilar(texto.upper(), negrita=True), COLS)
         antes = 2 if self.fila > 0 else 0
-        if antes + len(lineas) + 1 + sigue > self.libres():
+        quedan = self.libres() - antes - len(lineas)
+        if quedan < 0 or not self.entra_algo(siguiente, quedan):
             self.nueva()
             antes = 0
         self.aire(antes)
         for l in lineas:
             self.poner(0, l)
 
+    @staticmethod
+    def entra_algo(bloque, libres):
+        """¿Empieza el bloque siguiente en esta misma página? (para no dejar encabezados sueltos)"""
+        if bloque is None:
+            return True
+        t = bloque["tipo"]
+        if t == "accion":
+            return tanda_de_accion(renglones_de_accion(bloque["lineas"]), libres, 1) > 0
+        if t == "dialogo":
+            return tanda_de_dialogo(renglones_de_dialogo(bloque["partes"]), libres, 1) > 0
+        if t == "centrado":
+            return 1 + len(partir(estilar(bloque["texto"]), COLS)) <= libres
+        if t == "transicion":
+            return 2 <= libres
+        return True
+
     def accion(self, duras):
-        lineas = []
-        for d in duras:
-            lineas.extend(partir(estilar(d), COLS))
-        antes = 1 if self.fila > 0 else 0
-        total = len(lineas)
-        if antes + total <= self.libres():
+        lineas = renglones_de_accion(duras)
+        while lineas:
+            antes = 1 if self.fila > 0 else 0
+            k = tanda_de_accion(lineas, self.libres(), antes)
+            if k == 0:
+                if self.fila == 0:           # párrafo más largo que una página
+                    k = RENGLONES
+                else:
+                    self.nueva()
+                    continue
             self.aire(antes)
-            for l in lineas:
+            for l in lineas[:k]:
                 self.poner(0, l)
-            return
-        caben = self.libres() - antes
-        if caben >= 2 and total - caben >= 2:
-            self.aire(antes)
-            for l in lineas[:caben]:
-                self.poner(0, l)
-            resto = lineas[caben:]
-        else:
-            resto = lineas
-        while resto:
-            self.nueva()
-            tanda, resto = resto[:RENGLONES], resto[RENGLONES:]
-            for l in tanda:
-                self.poner(0, l)
+            lineas = lineas[k:]
+            if lineas:
+                self.nueva()
 
     def dialogo(self, personaje, partes):
-        lineas = []
-        for tipo, texto in partes:
-            if tipo == "acotacion":
-                for l in partir(estilar(texto), ANCHO_DE["acotacion"]):
-                    lineas.append(("acotacion", l))
-            elif tipo == "verso":
-                for l in partir(estilar(texto, cursiva=True), ANCHO_DE["dialogo"]):
-                    lineas.append(("dialogo", l))
-            else:
-                for l in partir(estilar(texto), ANCHO_DE["dialogo"]):
-                    lineas.append(("dialogo", l))
+        lineas = renglones_de_dialogo(partes)
         nombre = personaje.upper()
-        antes = 1 if self.fila > 0 else 0
-
-        def volcar(tanda, cabecera):
-            self.poner(SANGRIA["personaje"], estilar(cabecera))
-            for tipo, l in tanda:
-                self.poner(SANGRIA[tipo], l)
-
-        while True:
-            if antes + 1 + len(lineas) <= self.libres():
-                self.aire(antes)
-                volcar(lineas, nombre)
-                return
-            # ¿se puede partir? cabecera + k renglones + (MÁS)
-            maximo = self.libres() - antes - 2
-            mejor = None
-            for k in range(min(maximo, len(lineas) - 2), 1, -1):
-                if lineas[k - 1][0] != "dialogo":
-                    continue
-                if mejor is None:
-                    mejor = k
-                if plano(lineas[k - 1][1]).rstrip().endswith((".", "!", "?", "…", "»")):
-                    mejor = k
-                    break
-            if mejor is None:
-                self.nueva()
-                antes = 0
-                if 1 + len(lineas) > RENGLONES:
-                    mejor = RENGLONES - 2
+        while lineas:
+            antes = 1 if self.fila > 0 else 0
+            k = tanda_de_dialogo(lineas, self.libres(), antes)
+            if k == 0:
+                if self.fila == 0:           # parlamento más largo que una página
+                    k = RENGLONES - 2
                 else:
+                    self.nueva()
                     continue
             self.aire(antes)
-            volcar(lineas[:mejor], nombre)
-            self.poner(SANGRIA["personaje"], estilar("(MÁS)"))
-            lineas = lineas[mejor:]
-            if "(CONT.)" not in nombre:
-                nombre = nombre + " (CONT.)"
-            self.nueva()
-            antes = 0
+            self.poner(SANGRIA["personaje"], estilar(nombre))
+            for tipo, l in lineas[:k]:
+                self.poner(SANGRIA[tipo], l)
+            lineas = lineas[k:]
+            if lineas:
+                self.poner(SANGRIA["personaje"], estilar("(MÁS)"))
+                if "(CONT.)" not in nombre:
+                    nombre += " (CONT.)"
+                self.nueva()
 
     def transicion(self, texto):
         linea = estilar(texto.upper())
@@ -347,25 +383,6 @@ class Paginador:
             self.poner((COLS - len(l)) / 2.0, l)
 
 
-def minimo(b):
-    """Renglones que un bloque necesita, como mínimo, en la página donde empieza."""
-    t = b["tipo"]
-    if t == "accion":
-        n = sum(len(partir(estilar(d), COLS)) for d in b["lineas"])
-        return n if n <= 3 else 2
-    if t == "dialogo":
-        n = 0
-        for tipo, texto in b["partes"]:
-            ancho = ANCHO_DE["acotacion"] if tipo == "acotacion" else ANCHO_DE["dialogo"]
-            n += len(partir(estilar(texto), ancho))
-        return 1 + n if n <= 3 else 4
-    if t == "centrado":
-        return len(partir(estilar(b["texto"]), COLS))
-    if t == "transicion":
-        return 1
-    return 0
-
-
 def paginar(bloques):
     p = Paginador()
     for n, b in enumerate(bloques):
@@ -376,12 +393,12 @@ def paginar(bloques):
         elif t == "capitulo":
             p.pendiente = b["texto"]
         elif t == "escena":
-            sigue = 2
+            siguiente = None
             for otro in bloques[n + 1:]:
-                if otro["tipo"] not in ("capitulo",):
-                    sigue = minimo(otro)
+                if otro["tipo"] != "capitulo":
+                    siguiente = otro
                     break
-            p.escena(b["texto"], sigue)
+            p.escena(b["texto"], siguiente)
         elif t == "accion":
             p.accion(b["lineas"])
         elif t == "dialogo":
@@ -432,7 +449,7 @@ def portada(c):
     c.drawString(IZQ, 96, "Largometraje de ficción")
     c.drawString(IZQ, 82, "Ópera prima")
     c.drawRightString(IZQ + COLS * CAR, 96, "Primera versión")
-    c.drawRightString(IZQ + COLS * CAR, 82, "Buenos Aires, noviembre de 2026")
+    c.drawRightString(IZQ + COLS * CAR, 82, "Noviembre de 2026")
     c.showPage()
 
 
@@ -488,7 +505,7 @@ def construir(mostrar_paginas=False):
         if numero > 1:
             c.setFont("CP", 12)
             c.drawRightString(IZQ + COLS * CAR, ALTO - 44, "%d." % numero)
-        for fila, sangria, linea, _ in pagina:
+        for fila, sangria, linea in pagina:
             dibujar_linea(c, IZQ + sangria * CAR, PRIMER_RENGLON - fila * RENGLON, linea)
         c.showPage()
     c.save()
