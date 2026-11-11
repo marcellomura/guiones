@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Te estábamos esperando — Biblia de serie</title>
+<style>
+@font-face{font-family:"Playfair";font-weight:400;font-style:normal;src:url("tipografias/playfair-display-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"Playfair";font-weight:400;font-style:italic;src:url("tipografias/playfair-display-latin-400-italic.woff2") format("woff2")}
+@font-face{font-family:"Playfair";font-weight:700;font-style:normal;src:url("tipografias/playfair-display-latin-700-normal.woff2") format("woff2")}
+@font-face{font-family:"Playfair";font-weight:700;font-style:italic;src:url("tipografias/playfair-display-latin-700-italic.woff2") format("woff2")}
+@font-face{font-family:"Playfair";font-weight:900;font-style:normal;src:url("tipografias/playfair-display-latin-900-normal.woff2") format("woff2")}
+@font-face{font-family:"Playfair";font-weight:900;font-style:italic;src:url("tipografias/playfair-display-latin-900-italic.woff2") format("woff2")}
+@font-face{font-family:"Oswald";font-weight:400;src:url("tipografias/oswald-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"Oswald";font-weight:500;src:url("tipografias/oswald-latin-500-normal.woff2") format("woff2")}
+@font-face{font-family:"Oswald";font-weight:600;src:url("tipografias/oswald-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"Serif4";font-weight:400;font-style:normal;src:url("tipografias/source-serif-4-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"Serif4";font-weight:400;font-style:italic;src:url("tipografias/source-serif-4-latin-400-italic.woff2") format("woff2")}
+@font-face{font-family:"Serif4";font-weight:600;font-style:normal;src:url("tipografias/source-serif-4-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"Serif4";font-weight:600;font-style:italic;src:url("tipografias/source-serif-4-latin-600-italic.woff2") format("woff2")}
+@font-face{font-family:"VT";font-weight:400;src:url("tipografias/vt323-latin-400-normal.woff2") format("woff2")}
+
+:root{
+  --ink:#1a1512; --night:#14100e; --paper:#f3ead9; --paper2:#eadfc8;
+  --dust:#d9c7a3; --ocre:#a8772a; --rojo:#c0271e; --salmon:#ee8a6c; --gris:#6f6557;
+}
+@page{size:297mm 210mm;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#555}
+body{font-family:"Serif4",Georgia,serif;color:var(--ink);font-size:12.4pt;line-height:1.48;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{width:297mm;height:210mm;position:relative;overflow:hidden;background:var(--paper);padding:17mm 19mm 16mm 19mm;page-break-after:always;break-after:page}
+.page.dark{background:var(--night);color:var(--paper)}
+.page.dark::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.035) 0,rgba(255,255,255,.035) 1px,transparent 1px,transparent 3.2px);pointer-events:none}
+.page.dark::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(238,138,108,.10),transparent 62%);pointer-events:none}
+.page>*{position:relative;z-index:1}
+
+/* hilo rojo que cruza todas las páginas */
+.hilo{position:absolute;left:0;right:0;top:11mm;height:0;border-top:1.1pt solid var(--rojo);z-index:2}
+.hilo i{position:absolute;top:-3.2pt;width:5.4pt;height:5.4pt;border-radius:50%;background:var(--rojo)}
+.pie{position:absolute;left:19mm;right:19mm;bottom:8mm;display:flex;justify-content:space-between;align-items:baseline;font-family:"Oswald";font-size:8pt;letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+.dark .pie{color:#8d8171}
+.pie b{font-family:"VT";font-weight:400;font-size:14pt;letter-spacing:.06em;color:var(--rojo)}
+
+.kicker{font-family:"Oswald";font-weight:500;font-size:9.4pt;letter-spacing:.3em;text-transform:uppercase;color:var(--rojo);margin-bottom:3.2mm}
+h1{font-family:"Playfair";font-weight:900;font-size:33pt;line-height:1.02;letter-spacing:-.012em;margin-bottom:6mm}
+h1 em{font-weight:400}
+h2{font-family:"Playfair";font-weight:700;font-size:15pt;line-height:1.14;margin-bottom:2mm}
+h3{font-family:"Oswald";font-weight:600;font-size:9.6pt;letter-spacing:.2em;text-transform:uppercase;margin-bottom:1.6mm}
+p{margin-bottom:2.6mm}
+p:last-child{margin-bottom:0}
+em{font-style:italic}
+strong{font-weight:600}
+.osd{font-family:"VT";font-size:15pt;letter-spacing:.07em;line-height:1}
+.cols{display:grid;gap:9mm}
+.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:1fr 1fr 1fr}.c4{grid-template-columns:repeat(4,1fr)}
+.lead{font-family:"Playfair";font-size:15.7pt;line-height:1.36}
+.cita{font-family:"Playfair";font-style:italic;font-size:17pt;line-height:1.28}
+.cita small{display:block;margin-top:3mm;font-family:"Oswald";font-style:normal;font-size:8.7pt;letter-spacing:.24em;text-transform:uppercase;color:var(--salmon)}
+.tag{display:inline-block;font-family:"Oswald";font-weight:500;font-size:8.1pt;letter-spacing:.2em;text-transform:uppercase;padding:1mm 2.2mm;border:.8pt solid currentColor;border-radius:20mm}
+.spoiler{display:inline-block;font-family:"VT";font-size:14pt;letter-spacing:.08em;color:var(--paper);background:var(--rojo);padding:.4mm 2.4mm;margin-left:3mm;vertical-align:middle}
+
+/* ---------- PORTADA ---------- */
+.portada{padding:0}
+.portada .osd{position:absolute;color:#e9dfcc;opacity:.86}
+.portada .tl{left:17mm;top:15mm}.portada .tr{right:17mm;top:15mm;text-align:right}
+.portada .bl{left:17mm;bottom:14mm}.portada .br{right:17mm;bottom:14mm;text-align:right}
+.portada .rec{color:var(--rojo)}
+.portada .centro{position:absolute;left:26mm;right:26mm;top:50mm}
+.portada .sup{font-family:"Oswald";font-weight:500;font-size:11.2pt;letter-spacing:.46em;text-transform:uppercase;color:var(--salmon);margin-bottom:7mm}
+.portada .titulo{font-family:"Playfair";font-weight:900;font-size:86pt;line-height:.93;letter-spacing:-.02em;color:#f6eedd;text-shadow:-1.6pt 0 0 rgba(238,138,108,.55),1.6pt 0 0 rgba(86,190,205,.38)}
+.portada .titulo em{font-weight:400;font-style:italic}
+.portada svg.cinta{position:absolute;left:0;top:137mm;width:297mm;height:26mm}
+.portada .bajada{position:absolute;left:26mm;top:160mm;width:160mm;font-family:"Playfair";font-style:italic;font-size:17.1pt;line-height:1.34;color:#e9dfcc}
+
+/* ---------- FICHA ---------- */
+.ficha{border-top:1.4pt solid var(--ink);font-size:11.2pt}
+.ficha div{display:grid;grid-template-columns:31mm 1fr;gap:3mm;padding:2mm 0;border-bottom:.5pt solid #bfb196}
+.ficha dt{font-family:"Oswald";font-weight:500;font-size:8.4pt;letter-spacing:.2em;text-transform:uppercase;color:var(--gris);padding-top:.5mm}
+
+/* ---------- CRUCE ---------- */
+.venn{position:relative;height:96mm}
+.venn .c{position:absolute;width:86mm;height:86mm;border-radius:50%;top:4mm;display:flex;flex-direction:column;justify-content:center;padding:0 12mm;font-size:10.5pt;line-height:1.36}
+.venn .a{left:0;background:rgba(238,138,108,.52);text-align:left;padding-right:36mm}
+.venn .b{left:50mm;background:rgba(168,119,42,.36);text-align:right;padding-left:36mm}
+.venn .c b{font-family:"Oswald";font-weight:600;font-size:9.4pt;letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:1.6mm}
+.venn .x{position:absolute;left:50mm;width:36mm;top:35mm;text-align:center;font-family:"Playfair";font-weight:900;font-style:italic;font-size:13.5pt;line-height:1.12;color:var(--ink)}
+.pilar{border-top:1.4pt solid var(--ink);padding-top:3mm}
+.pilar .n{font-family:"VT";font-size:17pt;color:var(--rojo);line-height:1;margin-bottom:1mm}
+
+/* ---------- MUNDO ---------- */
+.plaza{position:absolute;left:0;right:0;top:0;height:98mm;background:var(--night);overflow:hidden}
+.plaza svg{position:absolute;inset:0;width:100%;height:100%}
+.plaza .rot{position:absolute;left:19mm;top:34mm;width:118mm;color:var(--paper)}
+.plaza .rot h1{margin:0;font-size:31pt}
+.plaza .rot .kicker{color:var(--salmon)}
+.mundo{position:absolute;left:19mm;right:19mm;top:107mm}
+.tex{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:5mm;border:1pt solid var(--ink)}
+.tex div{padding:2.6mm 4mm;font-size:10.3pt;line-height:1.36}
+.tex div+div{border-left:1pt solid var(--ink)}
+.tex b{font-family:"VT";font-weight:400;font-size:16.4pt;display:block;line-height:1.1}
+.tex .t79{background:#dcc69a}.tex .t96{background:var(--salmon)}.tex .t26{background:#fbf7ee}
+
+/* ---------- PERSONAJES ---------- */
+.pj{display:grid;grid-template-columns:1fr 1fr;gap:11mm}
+.card{position:relative;padding-top:4mm;border-top:1.4pt solid var(--ink)}
+.card .rol{font-family:"Oswald";font-weight:500;font-size:8.9pt;letter-spacing:.26em;text-transform:uppercase;color:var(--rojo)}
+.card .nombre{font-family:"Playfair";font-weight:900;font-size:25pt;line-height:1.02;margin:1mm 0 .6mm}
+.card .nombre small{font-family:"Playfair";font-weight:400;font-style:italic;font-size:15.2pt}
+.card .edad{font-family:"VT";font-size:15.2pt;color:var(--gris);margin-bottom:2.6mm}
+.card .frase{font-family:"Playfair";font-style:italic;font-size:13.6pt;line-height:1.3;margin:3mm 0;padding-left:4mm;border-left:2pt solid var(--rojo)}
+.qn{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-top:3mm;font-size:10.8pt;line-height:1.4}
+.qn h3{color:var(--gris);font-size:8.2pt;margin-bottom:.8mm}
+.secreto{margin-top:3mm;background:var(--ink);color:var(--paper);padding:3mm 4mm;font-size:10.8pt;line-height:1.42}
+.secreto h3{color:var(--salmon);font-size:8.2pt}
+.signo{position:absolute;right:0;top:4mm;width:17mm;height:17mm}
+.mini{display:grid;grid-template-columns:repeat(4,1fr);gap:6mm 7mm}
+.mini .m{border-top:1pt solid var(--ink);padding-top:2.4mm;font-size:10.3pt;line-height:1.4}
+.mini .m .rol{font-family:"Oswald";font-weight:500;font-size:7.7pt;letter-spacing:.22em;text-transform:uppercase;color:var(--rojo)}
+.mini .m h2{font-size:15.2pt;margin:.6mm 0 1.2mm}
+.mini .m h2 small{font-family:"VT";font-weight:400;font-size:12.9pt;color:var(--gris)}
+
+/* ---------- MENTIRAS ---------- */
+.ment{display:grid;grid-template-columns:repeat(3,1fr);gap:8mm;margin-top:2mm}
+.ment .l{border-top:1.4pt solid var(--salmon);padding-top:3.4mm;font-size:12.4pt;line-height:1.46}
+.ment .anio{font-family:"VT";font-size:19pt;color:var(--salmon);line-height:1}
+.ment h2{font-size:17pt;font-style:italic;margin:1.4mm 0 2.6mm}
+.verdad{margin-top:9mm;border:1pt solid var(--rojo);padding:6mm 7mm;display:grid;grid-template-columns:52mm 1fr;gap:7mm;align-items:center;font-size:12.4pt}
+.verdad h2{margin:0;font-size:18pt;font-style:italic;color:#f6eedd}
+
+/* ---------- CRONOLOGÍA ---------- */
+.linea{position:relative;margin-top:5mm;display:grid;grid-template-columns:repeat(4,1fr);gap:0 6mm}
+.ev{position:relative;border-top:1.4pt solid var(--ink);padding:3mm 0 4.2mm;font-size:10.4pt;line-height:1.4}
+.ev::before{content:"";position:absolute;left:0;top:-3.6pt;width:6pt;height:6pt;border-radius:50%;background:var(--rojo)}
+.ev b{font-family:"VT";font-weight:400;font-size:15pt;display:block;line-height:1.05;margin-bottom:.8mm}
+.ev.s b{color:var(--rojo)}
+
+/* ---------- EPISODIOS ---------- */
+.eps{display:grid;gap:8mm;font-size:11pt}
+.ep{border-top:1.4pt solid var(--ink);padding-top:3mm;font-size:inherit;line-height:1.45}
+.ep .num{font-family:"VT";font-size:15pt;color:var(--rojo);line-height:1}
+.ep h2{font-size:17pt;margin:.8mm 0 2.4mm}
+.ep .giro{margin-top:2.6mm;padding:2.2mm 3mm;background:var(--paper2);font-size:10.4pt;line-height:1.4}
+.ep .giro b{font-family:"Oswald";font-weight:600;font-size:8pt;letter-spacing:.22em;text-transform:uppercase;color:var(--rojo);margin-right:1.6mm}
+.ep.esp{background:var(--ink);color:var(--paper);border-top:none;padding:5mm 6mm}
+.ep.esp .num{color:var(--salmon)}
+.ep.esp .giro{background:rgba(255,255,255,.08)}
+.ep.esp .giro b{color:var(--salmon)}
+.ep.esp .tag{color:var(--salmon);margin-bottom:2mm}
+
+/* ---------- VENTA ---------- */
+.lista{list-style:none}
+.lista li{padding:2.3mm 0 2.3mm 9mm;border-bottom:.5pt solid #bfb196;position:relative;font-size:11.5pt;line-height:1.42}
+.lista li::before{content:attr(data-n);position:absolute;left:0;top:2mm;font-family:"VT";font-size:16.4pt;color:var(--rojo)}
+.lista li strong{font-family:"Oswald";font-weight:600;font-size:9.4pt;letter-spacing:.14em;text-transform:uppercase}
+
+/* ---------- CIERRE ---------- */
+.cierre{display:flex;flex-direction:column;justify-content:center;padding-left:40mm;padding-right:40mm}
+.cierre .susurro{font-family:"Playfair";font-style:italic;font-size:30pt;line-height:1.22;color:#f6eedd}
+.cierre .susurro span{display:block;font-family:"Oswald";font-style:normal;font-weight:500;font-size:8.9pt;letter-spacing:.3em;text-transform:uppercase;color:var(--salmon);margin:8mm 0 2mm}
+.cierre .susurro span:first-child{margin-top:0}
+</style>
+</head>
+<body>
+
+<!-- 1. PORTADA -->
+<section class="page dark portada">
+  <div class="osd tl">PLAY ▶</div>
+  <div class="osd tr"><span class="rec">●</span> SP &nbsp;0:43:01</div>
+  <div class="centro">
+    <div class="sup">Miniserie · 7 episodios · Melodrama / Thriller</div>
+    <div class="titulo">Te estábamos<br><em>esperando</em></div>
+  </div>
+  <svg class="cinta" viewBox="0 0 2970 260" preserveAspectRatio="none">
+    <path d="M0,120 C380,60 700,180 1120,118 S1750,70 2050,128 S2700,170 2970,104" fill="none" stroke="#c0271e" stroke-width="9" stroke-linecap="round"/>
+    <path d="M2050,128 c-70,-90 -150,-60 -110,10 c30,50 90,20 110,-10 c40,-80 140,-90 130,-10 c-8,50 -90,40 -130,10 M2050,128 l-46,104 M2050,128 l52,100" fill="none" stroke="#c0271e" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <div class="bajada">En 1996, la televisión le devolvió una hija en vivo.<br>No era la suya. Ella lo supo desde el primer abrazo.</div>
+  <div class="osd bl">20·11·1996 &nbsp;22:47</div>
+  <div class="osd br">BIBLIA DE SERIE</div>
+</section>
+
+<!-- 2. LOGLINE -->
+<section class="page">
+  <div class="hilo"><i style="left:19mm"></i></div>
+  <div class="cols" style="grid-template-columns:1.55fr 1fr;gap:14mm;margin-top:6mm">
+    <div>
+      <div class="kicker">Logline</div>
+      <p class="lead" style="font-size:22pt;line-height:1.3">En 1996, el programa más visto de la televisión argentina le devolvió en vivo a una lavandera santiagueña la hija que le habían robado diecisiete años antes. Treinta años después, el programa vuelve al pueblo a celebrar el milagro.</p>
+      <p class="lead" style="font-size:22pt;line-height:1.3;margin-top:5mm">Hay un problema: <em>la hija nunca fue la hija.</em> Y la verdadera está detrás de cámara, produciendo el especial, sin saber quién es.</p>
+      <div style="margin-top:10mm;padding-top:4mm;border-top:1.4pt solid var(--ink)">
+        <div class="kicker">En una frase</div>
+        <p class="cita" style="font-size:20pt">Una familia es una mentira que todos deciden creer al mismo tiempo.</p>
+      </div>
+    </div>
+    <div>
+      <div class="kicker">Ficha</div>
+      <dl class="ficha">
+        <div><dt>Formato</dt><dd>Miniserie cerrada. 7 episodios de 55 minutos.</dd></div>
+        <div><dt>Género</dt><dd>Melodrama de alto voltaje con motor de thriller y misterio social.</dd></div>
+        <div><dt>Tono</dt><dd>Conmovedor, brutal y con humor. Se llora y se ríe en la misma escena.</dd></div>
+        <div><dt>Tiempos</dt><dd>2026 (presente), 1996 (el programa), 1979 (la siesta).</dd></div>
+        <div><dt>Mundo</dt><dd>Un pueblo del monte santiagueño y un estudio de televisión de los noventa.</dd></div>
+        <div><dt>Protagonistas</dt><dd>Cuatro mujeres: 47, 48, 73 y 82 años.</dd></div>
+        <div><dt>Pregunta</dt><dd>¿Qué hace a una madre: la sangre, la crianza o una mentira sostenida treinta años?</dd></div>
+        <div><dt>Material</dt><dd>Esta biblia y el guion completo del episodio 1 (57 páginas).</dd></div>
+      </dl>
+    </div>
+  </div>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 02</b></div>
+</section>
+
+<!-- 3. LA SERIE -->
+<section class="page">
+  <div class="hilo"><i style="left:52mm"></i></div>
+  <div class="kicker" style="margin-top:6mm">La serie</div>
+  <h1 style="font-size:29pt;margin-bottom:4.5mm">Cuarenta y tres puntos de rating<br><em>y cuatro segundos de silencio.</em></h1>
+  <div class="cols" style="grid-template-columns:1fr 1fr 0.8fr;gap:8mm;font-size:10.5pt;line-height:1.42">
+    <div>
+      <p><strong>20 de noviembre de 1996.</strong> En el último programa del año de <em>Te estábamos esperando</em>, Marilú Devoto —la mujer más querida de la televisión argentina— abre una puerta blanca y le devuelve a Elvira Sosa, lavandera analfabeta de Pozo del Cielo, la beba que desapareció de su hamaca una siesta de Reyes. Elvira toca un hoyito arriba de la oreja de la chica, tarda cuatro segundos eternos y dice dos palabras: <em>«Es ella»</em>. Es el minuto más visto de la historia del canal.</p>
+      <p>El pueblo entero se reorganiza alrededor de ese abrazo. Hay Fiesta Nacional del Reencuentro, velas con la cara de la conductora y una plaza con cuarenta y dos hamacas vacías: una por cada hijo que les falta a otras madres. Si la de Elvira volvió, los demás también pueden volver.</p>
+    </div>
+    <div>
+      <p><strong>Noviembre de 2026.</strong> Una plataforma relanza el programa y quiere abrir con su reencuentro más famoso. Llegan los camiones, la diva de ochenta y dos años y un sponsor que vende tests de ADN: en vivo, madre e hija recibirán su árbol genético.</p>
+      <p>Milagros Sosa, la hija devuelta, jefa del Registro Civil y orgullo del pueblo, tiene cuatro días para evitar que un tubito de saliva diga lo que ella sabe desde los diecisiete: se llama Yésica Benítez, salió de un hogar de Lanús, la eligieron en un casting y el hoyito se lo hicieron con una aguja caliente.</p>
+      <p>Lo que Yésica no sabe es todo lo demás. Por qué la diva necesitaba que esa mujer dejara de buscar. Qué guarda Elvira en una lata atada con hilo. Y qué le contestó su madre al oído aquella noche.</p>
+    </div>
+    <div style="background:var(--ink);color:var(--paper);padding:7mm 7mm 6mm;align-self:start">
+      <p class="cita" style="font-size:15.6pt">«A una pobre, cuando le falta un hijo, le dicen que ha sido el Duende. Y después cierran la ventanilla.»<small>Elvira Sosa, en vivo, 1996</small></p>
+    </div>
+  </div>
+  <p class="lead" style="margin-top:4mm;max-width:250mm;font-size:12.6pt">Siete episodios sobre tres mujeres que mintieron por amor y por miedo, un pueblo que levantó su fe sobre un programa de televisión y un país que aprendió, con razón y con orgullo, a buscar a sus nietos, pero que todavía no se preguntó por los hijos de las lavanderas.</p>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 03</b></div>
+</section>
+
+<!-- 4. EL CRUCE -->
+<section class="page">
+  <div class="hilo"><i style="left:88mm"></i></div>
+  <div class="cols" style="grid-template-columns:136mm 1fr;gap:12mm;margin-top:6mm">
+    <div>
+      <div class="kicker">Tono</div>
+      <h1 style="font-size:29pt;margin-bottom:3mm">Un melodrama sin vergüenza<br><em>con un misterio adentro.</em></h1>
+      <div class="venn">
+        <div class="c a"><b>El melodrama</b>Divas, madres, pelucas, cultura popular como liturgia. Ternura por los monstruos. Emoción sin ironía, a todo volumen.</div>
+        <div class="c b"><b>El misterio social</b>Un duelo colectivo, una herida histórica, una comunidad que necesita creer. Episodios‑isla que cambian las reglas.</div>
+        <div class="x">Te estábamos esperando</div>
+      </div>
+      <p style="font-size:10.5pt;color:var(--gris);margin-top:1mm">En la línea de <em>La Mesías</em> y <em>Veneno</em>, cruzadas con <em>The Leftovers</em> y <em>Watchmen</em>, y con tradición propia: Manuel Puig, Leonardo Favio, la siesta de <em>La ciénaga</em>.</p>
+    </div>
+    <div style="display:grid;gap:5.5mm;align-content:start;margin-top:10mm">
+      <div class="pilar"><div class="n">01</div><h2>Se llora y se ríe en la misma escena</h2><p>Una señora con demencia que esconde las cucharas en el horno y, un minuto después, dice la frase más lúcida del episodio. Una peluquera travesti que resuelve un problema de genética con hojas de coca. El humor no alivia el drama: lo vuelve verdadero.</p></div>
+      <div class="pilar"><div class="n">02</div><h2>A veces se vuelve thriller</h2><p>Cuatro días de cuenta regresiva, un casete que no debería existir, un muerto en la habitación 7 y un comisario demasiado bueno. Cada episodio termina en un giro que obliga a mirar el anterior de otra manera.</p></div>
+      <div class="pilar"><div class="n">03</div><h2>El terror pasa a las tres de la tarde</h2><p>Sin noche ni sótanos. Luz blanca, cuarenta y seis grados, un pueblo dormido y una hamaca que se mueve sola. La siesta es la hora en que se llevan a los chicos, y es también la hora en que nadie mira.</p></div>
+    </div>
+  </div>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 04</b></div>
+</section>
+
+<!-- 5. EL MUNDO -->
+<section class="page" style="padding:0">
+  <div class="plaza">
+    <svg id="hamacas" viewBox="0 0 2970 980" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="rot"><div class="kicker">El mundo</div><h1>Pozo del Cielo,<br><em>Capital Nacional del Reencuentro.</em></h1></div>
+  </div>
+  <div class="mundo">
+    <div class="cols c3" style="gap:8mm;font-size:11.2pt;line-height:1.44">
+      <div><h3>El pueblo</h3><p>Monte santiagueño, tierra blanca, dos mil habitantes. Hasta 1996 no figuraba en el mapa de la estación de servicio. Hoy tiene arco de bienvenida, hotel El Reencuentro, calle Marilú Devoto y un mural de la diva en el tanque de agua, con un ojo que mira para Tucumán. Vive de su milagro y no puede permitirse perderlo.</p></div>
+      <div><h3>Las hamacas</h3><p>En el algarrobo de la plaza cuelgan cuarenta y dos hamacas de criatura, cada una con una chapita y un nombre. Son de las Madres de la Siesta: mujeres a las que les dijeron «nació muertito» o «se lo llevó el Duende». Una sola tiene flores y un cartel: <em>Volvió</em>. Cada noviembre las hamacan vacías, a la luz de las velas.</p></div>
+      <div><h3>La televisión</h3><p>El otro territorio es un estudio de 1996: sillón color salmón, puerta blanca con marco dorado, señoras con pañuelito. La televisión como iglesia de un país que le escribía cartas a una conductora pidiéndole lo que no le daban el juzgado ni la comisaría. En 2026 vuelve como contenido, con sponsor.</p></div>
+    </div>
+    <div class="tex">
+      <div class="t79"><b>1979 · 16 MM</b>La siesta. Grano, sol quemado, casi sin música. Se habla mitad en quichua.</div>
+      <div class="t96"><b>1996 · 4:3 BETACAM</b>El programa. Color lavado y caliente, saxo de cortina, minuto a minuto.</div>
+      <div class="t26"><b>2026 · PANTALLA ANCHA</b>El presente. Luz dura, planos abiertos, teléfonos en alto y chicharras.</div>
+    </div>
+  </div>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 05</b></div>
+</section>
+
+<!-- 6. PERSONAJES I -->
+<section class="page">
+  <div class="hilo"><i style="left:124mm"></i></div>
+  <div class="kicker" style="margin-top:6mm">Personajes · Las cuatro <span class="spoiler">CONTIENE GIROS</span></div>
+  <div class="pj" style="margin-top:4mm">
+    <div class="card">
+      <svg class="signo" viewBox="0 0 100 100"><circle cx="50" cy="50" r="27" fill="none" stroke="#ee8a6c" stroke-width="9" stroke-dasharray="14 5 22 4 9 6"/></svg>
+      <div class="rol">La que volvió</div>
+      <div class="nombre">Milagros Sosa <small>/ Yésica Benítez</small></div>
+      <div class="edad">47 AÑOS · JEFA DEL REGISTRO CIVIL</div>
+      <p>Firma las identidades de todo un pueblo con una identidad falsa. Creció en el Hogar Santa Rita de Lanús, cama doce. A los diecisiete un productor la eligió entre once chicas porque fue la única que preguntó cómo se llamaba la señora. Lleva treinta años cuidando a una madre que no es suya, mejor de lo que la cuidaría cualquier hija. Cuando se asusta se rasca la cicatriz y le vuelve el conurbano a la boca.</p>
+      <div class="frase">«A mí me eligieron una sola vez en la vida, y fue para mentir.»</div>
+      <div class="qn">
+        <div><h3>Quiere</h3>Que Elvira se muera tranquila, creyendo que la hija le volvió.</div>
+        <div><h3>Necesita</h3>Que alguien la quiera sabiendo cómo se llama.</div>
+      </div>
+      <div class="secreto"><h3>Lo que no sabe</h3>Cree que engaña a su madre hace treinta años. Es al revés: Elvira la eligió sabiendo.</div>
+    </div>
+    <div class="card">
+      <svg class="signo" viewBox="0 0 100 100"><path d="M50,52 c-26,-34 -52,-18 -36,6 c12,18 30,6 36,-6 c10,-30 46,-34 42,-4 c-3,20 -30,14 -42,4 M50,52 l-16,38 M50,52 l18,36" fill="none" stroke="#c0271e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="rol">La madre del milagro</div>
+      <div class="nombre">Elvira Sosa</div>
+      <div class="edad">73 AÑOS · LAVANDERA</div>
+      <p>Santa viva de Pozo del Cielo. Analfabeta, pícara, devota de la Telesita. La demencia le va corriendo la niebla de a ratos y, cuando se corre, dice cosas que nadie debería oír. No suelta una lata de galletitas atada con hilo: «mis botones».</p>
+      <div class="frase">«La sangre no dice nada, m'hijita. La sangre es agua colorada. Yo he lavado mucha.»</div>
+      <div class="qn">
+        <div><h3>Quiere</h3>Que no la dejen sola. Y que nadie abra la lata.</div>
+        <div><h3>Necesita</h3>Decir lo que hizo antes de olvidarlo.</div>
+      </div>
+      <div class="secreto"><h3>Lo que esconde</h3>A los veinte años era «la que llevaba»: empleada de la monja partera, cruzaba el pueblo con los recién nacidos «para bañarlos» en la casa del juez. Guardó la cinta roja de cada uno: treinta y una. El día que dijo basta, le llevaron la suya. Y supo desde el primer abrazo que la chica de la tele no era su hija.</div>
+    </div>
+  </div>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 06</b></div>
+</section>
+
+<!-- 7. PERSONAJES II -->
+<section class="page">
+  <div class="hilo"><i style="left:160mm"></i></div>
+  <div class="kicker" style="margin-top:6mm">Personajes · Las cuatro <span class="spoiler">CONTIENE GIROS</span></div>
+  <div class="pj" style="margin-top:4mm">
+    <div class="card">
+      <svg class="signo" viewBox="0 0 100 100"><circle cx="50" cy="50" r="9" fill="#1a1512"/></svg>
+      <div class="rol">La que no sabe</div>
+      <div class="nombre">Victoria Devoto</div>
+      <div class="edad">48 AÑOS · SHOWRUNNER</div>
+      <p>Hija única de la diva. Brillante, seca, insomne, graciosa cuando no quiere. Creció en un camarín, convencida de ser hija de Marilú y de «un señor casado de Madrid». Relanza el programa de su madre para demostrar algo que no sabe qué es. Está obsesionada con cuatro segundos de un video de 1996: los que tarda Elvira en decir «es ella». Esa noche, con dieciocho años y una bandeja, le alcanzó un vaso de agua.</p>
+      <div class="frase">«Nadie me había dicho "m'hijita" en la vida. Vos le decís "mi amor" al sonidista, mamá.»</div>
+      <div class="qn">
+        <div><h3>Quiere</h3>Hacer el mejor programa de su carrera. Entender esos cuatro segundos.</div>
+        <div><h3>Necesita</h3>Saber de quién es hija, y sobrevivir a la respuesta.</div>
+      </div>
+      <div class="secreto"><h3>Lo que es</h3>Tiene, arriba de la oreja izquierda, un hoyito de nacimiento. Es Milagros Sosa. Es la única inocente de la historia y por eso la más peligrosa: cuando sepa, va a querer contarlo en vivo.</div>
+    </div>
+    <div class="card">
+      <svg class="signo" viewBox="0 0 100 100"><path d="M50,8 L58,42 L92,50 L58,58 L50,92 L42,58 L8,50 L42,42 Z" fill="#a8772a"/></svg>
+      <div class="rol">La diva</div>
+      <div class="nombre">Marilú Devoto</div>
+      <div class="edad">82 AÑOS · CONDUCTORA</div>
+      <p>María Luisa Scarpetta, de Villa Devoto, enfrente de la cárcel. Cincuenta años haciendo llorar a un país. Lengua de navaja, peluca impecable, un Martín Fierro de pisapapeles. Nunca pisó el pueblo que le hizo una vela. Quiere de verdad a su hija, y eso es lo peor que se puede decir de ella.</p>
+      <div class="frase">«Yo no lloro. Yo hago llorar. Es otra profesión.»</div>
+      <div class="qn">
+        <div><h3>Quiere</h3>Que el viernes pase rápido. Y un último aplauso.</div>
+        <div><h3>Necesita</h3>Contar una cosa, una sola vez, sin público.</div>
+      </div>
+      <div class="secreto"><h3>Lo que hizo</h3>En enero de 1979 compró una beba «del norte» a través de un juez. En 1996 abrió una carta y reconoció el nombre de ese juez. Entonces le fabricó una hija a la madre de su hija, para que dejara de buscar. Lo llamó «todos ganan».</div>
+    </div>
+  </div>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 07</b></div>
+</section>
+
+<!-- 8. PERSONAJES III -->
+<section class="page">
+  <div class="hilo"><i style="left:196mm"></i></div>
+  <div class="kicker" style="margin-top:6mm">Personajes · El pueblo y la tele</div>
+  <h1 style="font-size:27pt;margin-bottom:6mm">Los que sostienen la mentira<br><em>y los que la van a romper.</em></h1>
+  <div class="mini">
+    <div class="m"><div class="rol">La única que sabe el nombre</div><h2>Brenda <small>48</small></h2>Peluquera, trans, dueña de «Brenda Hollywood». Cama trece del mismo hogar. Llegó al pueblo en 2001 y se quedó. Conciencia y motor cómico: dice la verdad más brutal con un cepillo en la mano. Amante histórica y clandestina del intendente.</div>
+    <div class="m"><div class="rol">La hija de la hija</div><h2>Lu <small>24</small></h2>Se llama Marilú, «un nombre de vela». Community manager de la Municipalidad, productora local del especial. Quiere irse. Sin saberlo, abre cada puerta que su madre cierra. Su pregunta: si mi mamá no es hija de la abuela, ¿yo qué soy?</div>
+    <div class="m"><div class="rol">El hermano</div><h2>Moncho Sosa <small>56</small></h2>Comisario. Manso, grandote, querido. A los ocho años cruzó el pueblo dormido con su hermanita en brazos y la entregó a cambio de una bicicleta roja. El regreso de Milagros fue su absolución. Si ella es falsa, él vuelve a tener ocho años.</div>
+    <div class="m"><div class="rol">El que viene a pedir perdón</div><h2>El Turco Saad <small>72</small></h2>Ex productor estrella. Armó el casting, consiguió la aguja, besó el monitor. Dieciocho años limpio, cáncer de páncreas, paso nueve. Trae un casete con el micrófono de Elvira. No llega al episodio 3.</div>
+    <div class="m"><div class="rol">El padrino</div><h2>Dr. Hipólito Argañaraz <small>92</small></h2>Juez de menores retirado, patriarca. Ciento catorce «ahijados» a los que les mandó una tarjeta cada cumpleaños. Lúcido, cortés, sin una grieta. <em>«Yo no robé un solo chico. Los cambié de clase.»</em></div>
+    <div class="m"><div class="rol">El heredero</div><h2>Gonzalo Argañaraz <small>58</small></h2>Intendente. Hijo del juez. Simpático, transpirado, ridículo, peligroso solo cuando tiene miedo. Vive del milagro y nunca preguntó de dónde salió la casa de su padre.</div>
+    <div class="m"><div class="rol">La partera</div><h2>Sor Clemencia <small>88</small></h2>Recibió a medio pueblo. Convida mate y scones. Sigue convencida de que salvó almas. <em>«Nació muertito, m'hija. Ni lo mirés, que es peor.»</em></div>
+    <div class="m"><div class="rol">El coro</div><h2>Doña Ñata y las Madres <small>80</small></h2>Cada mes, desde hace cuarenta y nueve años, Ñata pide un acta que no existe. Canta la vidala de las hamacas. Venera a Elvira. Cuando sepa quién le llevó a su hijo, la serie cambia de género.</div>
+  </div>
+  <p style="margin-top:6mm;font-size:10.5pt;color:var(--gris)">Y también: <strong>Rolo</strong> (64), maquillador y sombra de Marilú desde 1989, que sabe peinar un secreto; <strong>Nico</strong>, <strong>Jazmín</strong> y <strong>Camila</strong>, el equipo porteño que llega a filmar un milagro y se encuentra con un expediente.</p>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 08</b></div>
+</section>
+
+<!-- 9. LAS TRES MENTIRAS -->
+<section class="page dark">
+  <div class="hilo"><i style="left:232mm"></i></div>
+  <div class="kicker" style="margin-top:6mm;color:var(--salmon)">El motor <span class="spoiler">CONTIENE GIROS</span></div>
+  <h1 style="color:#f6eedd">Tres mujeres mintieron.<br><em>Una sola no sabe nada.</em></h1>
+  <div class="ment">
+    <div class="l"><div class="anio">1979</div><h2>«Se la llevó el Duende.»</h2><p><strong>La mentira de Elvira.</strong> Sabía quién se había llevado a su hija y por qué. Inventó el mito para salvar de la culpa a un nene de ocho años y para salvarse ella: su dedo está estampado en treinta y un expedientes. Buscó diecisiete años sin poder acusar a nadie.</p></div>
+    <div class="l"><div class="anio">1996</div><h2>«Te estábamos esperando.»</h2><p><strong>La mentira de Marilú.</strong> Cuando la carta de Elvira llegó al programa, reconoció el nombre del juez que le había dado a su hija. No eligió entre confesar y callar: inventó una tercera salida. Le regaló una hija falsa a la madre de la suya, delante de todo el país.</p></div>
+    <div class="l"><div class="anio">1996 – 2026</div><h2>«Soy la Mili.»</h2><p><strong>La mentira de Yésica.</strong> Entró por una puerta de utilería con una herida fresca en la oreja y le susurró algo a una desconocida. Lleva treinta años creyendo que la engaña. La desconocida le contestó algo al oído que ella, de tanto llorar, no escuchó.</p></div>
+  </div>
+  <div class="verdad">
+    <h2>Y la verdad se llama Victoria.</h2>
+    <p>La serie no pregunta <em>quién miente</em>: en el minuto treinta del piloto ya lo sabemos. Pregunta qué se hace con una mentira que funcionó. Yésica fue mejor hija que nadie. Elvira fue madre de la que no parió. Un pueblo entero tiene esperanza gracias a un fraude. Decir la verdad es justo y además va a destruir lo único bueno que salió de todo esto. Ese es el dilema que empuja cada episodio.</p>
+  </div>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 09</b></div>
+</section>
+
+<!-- 10. CRONOLOGÍA -->
+<section class="page">
+  <div class="hilo"><i style="left:268mm"></i></div>
+  <div class="kicker" style="margin-top:6mm">Lo que pasó de verdad <span class="spoiler">CONTIENE GIROS</span></div>
+  <h1 style="font-size:27pt;margin-bottom:2mm">Cincuenta años <em>en ocho fechas.</em></h1>
+  <div class="linea">
+    <div class="ev s"><b>1974 – 1978</b>Elvira, veinteañera, empleada de Sor Clemencia en el hospital. Lleva treinta y un recién nacidos «a bañar» a la casa del juez. De cada uno se queda con la cinta roja contra el mal de ojo. Su hijo Moncho, que sí sabe escribir, les cose un papelito con el nombre.</div>
+    <div class="ev"><b>25 · 6 · 1978</b>Nace Milagros Sosa mientras el pueblo entero grita los goles de la final del Mundial frente al único televisor. Tiene el hoyito de las Sosa. Elvira entiende, por primera vez, qué es lo que estuvo llevando.</div>
+    <div class="ev s"><b>6 · 1 · 1979</b>La siesta de Reyes. Elvira se niega a llevar al hijo de otra. El juez se cobra. Un nene de ocho años cruza el pueblo con una beba en brazos. Un auto negro. Una mujer de anteojos oscuros. Una hamaca que se mueve sola.</div>
+    <div class="ev"><b>1979</b>Marilú Devoto «vuelve de Madrid» con una hija de meses y una historia sobre un señor casado. La prensa la adora. La beba se llama Victoria.</div>
+    <div class="ev"><b>1979 – 1996</b>Elvira busca. La policía le dice el Duende. La maestra le escribe cartas. En una de ellas, dirigida a un programa de televisión, nombra al juez.</div>
+    <div class="ev s"><b>20 · 11 · 1996</b>El abrazo. Once chicas en un casting, una aguja caliente, un sobre con un ADN que nadie hizo. Cuarenta y tres con uno. Victoria, pasante, le alcanza agua a su madre sin saberlo.</div>
+    <div class="ev"><b>1997 – 2025</b>La Capital Nacional del Reencuentro. La casa donada por el canal. El puesto en el Registro. La fiesta, las hamacas, las velas. La mentira se vuelve patrimonio.</div>
+    <div class="ev s"><b>16 – 20 · 11 · 2026</b>Vuelve el programa. Cuatro días, siete noches de novena, un tubito de saliva y un casete. Ahí transcurre la serie.</div>
+  </div>
+  <div style="margin-top:3mm;background:var(--ink);color:var(--paper);padding:4.4mm 7mm;display:grid;grid-template-columns:1fr 1fr;gap:10mm;font-size:11.1pt;line-height:1.42">
+    <p><strong style="font-family:Oswald;font-size:8.7pt;letter-spacing:.2em;text-transform:uppercase;color:var(--salmon)">La marca</strong><br>El hoyito arriba de la oreja es de nacimiento y se hereda. El de Elvira y el de Victoria son verdaderos. El de Yésica es una cicatriz: «los de nacer no hacen cascarita».</p>
+    <p><strong style="font-family:Oswald;font-size:8.7pt;letter-spacing:.2em;text-transform:uppercase;color:var(--salmon)">El casete</strong><br>El sonidista grabó por separado el micrófono corbatero de Elvira. Ahí quedó lo que la chica le susurró y lo que Elvira le contestó. El público lo oye recién en el último episodio.</p>
+  </div>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 10</b></div>
+</section>
+
+<!-- 11. EPISODIOS 1-3 -->
+<section class="page">
+  <div class="hilo"><i style="left:36mm"></i></div>
+  <div class="kicker" style="margin-top:6mm">Episodios <span class="spoiler">CONTIENE GIROS</span></div>
+  <div class="eps c3" style="grid-template-columns:1fr 1fr 1fr;margin-top:3mm">
+    <div class="ep">
+      <div class="num">EP 01 · PILOTO</div><h2>Te estábamos esperando</h2>
+      <p>1996: el abrazo, visto desde el control, el camarín y la tribuna. 2026: el programa vuelve a Pozo del Cielo. Milagros arma el pastillero de Elvira, busca actas que no existen y posa para los turistas con una sonrisa que tiene treinta años de oficio. Llega Victoria, llega la diva, llega un sponsor que quiere su saliva.</p>
+      <p>A puertas cerradas, en una peluquería, alguien la llama por su nombre. Un viejo baja del colectivo con una Biblia y un casete. Y en la novena de las hamacas, una señora perdida le ofrece agua a una desconocida.</p>
+      <div class="giro"><b>Giros</b>Milagros se llama Yésica y lo supo siempre. La hija verdadera es la productora: se recoge el pelo y tiene el hoyito.</div>
+    </div>
+    <div class="ep">
+      <div class="num">EP 02</div><h2>Cama doce</h2>
+      <p>Lanús, 1996. El casting de las once chicas, los ensayos de una infancia ajena, la aguja. La noche anterior, Marilú la visita en el hotel: <em>«No vas a engañar a nadie, mi amor. Vas a hacer feliz a una mujer. Eso no es mentir: es televisión».</em></p>
+      <p>2026. Yésica y Brenda planean el robo más ridículo del norte argentino: cambiar un tubo en la heladerita de un hotel. El ADN no sabe quién parió a quién; con saliva de Lu rotulada «Elvira», el resultado dirá madre e hija. Sale bien. Lu empieza a sospechar de una madre que de golpe coquea.</p>
+      <div class="giro"><b>Giro</b>El Turco aparece muerto en la habitación 7. Parece una recaída. El comisario Moncho hace el acta y revuelve el cuarto buscando algo que no está: el casete duerme en la lata de Elvira.</div>
+    </div>
+    <div class="ep">
+      <div class="num">EP 03</div><h2>Coincidencia</h2>
+      <p>Victoria no cree que un hombre con dieciocho años limpio se muera de sobredosis el día que vino a pedir perdón, y empieza a investigar su propio programa. Acorralada, Yésica hace lo único que juró no hacer: una tarde de lucidez, a la hora del mate, le confiesa todo a Elvira. Elvira la deja terminar.</p>
+      <p><em>«Ya sé, m'hijita. Desde el abrazo. Vos tenías el hoyito con cascarita.»</em></p>
+      <p>Lu encuentra el tubo verdadero de su abuela escondido en la heladera de la peluquería y, para saber qué le ocultan, lo manda al laboratorio con un kit a su nombre.</p>
+      <div class="giro"><b>Giro</b>En la plaza, frente a las hamacas, dos teléfonos vibran al mismo tiempo. El de Lu y el de Victoria: «Encontramos un familiar directo. Madre / hija. 50 %».</div>
+    </div>
+  </div>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 11</b></div>
+</section>
+
+<!-- 12. EPISODIOS 4-5 -->
+<section class="page">
+  <div class="hilo"><i style="left:72mm"></i></div>
+  <div class="kicker" style="margin-top:6mm">Episodios <span class="spoiler">CONTIENE GIROS</span></div>
+  <div class="eps" style="grid-template-columns:1.25fr 1fr;margin-top:3mm">
+    <div class="ep esp">
+      <span class="tag">Episodio especial</span>
+      <div class="num">EP 04</div><h2 style="font-size:24pt">Marilú</h2>
+      <p>Una noche, una habitación, un corte de luz y cuarenta y seis grados. Victoria entra con el teléfono en la mano. Marilú se saca la peluca y, por primera vez en su vida, cuenta algo sin público.</p>
+      <p>El episodio es su vida contada como ella la produciría: decorados, cortinas musicales, un número de revista, tandas publicitarias. Cada vez que se acerca a la verdad, el decorado se cae. 1963: un aborto en una cocina de Devoto que la deja estéril. 1978: un amante con uniforme que le consigue «una del norte, que son sanitas». Reyes de 1979: un auto negro parado a la siesta en un pueblo cuyo nombre no quiso saber, un nene que llega caminando con una beba en brazos y, por la luneta, una mujer descalza corriendo detrás del polvo.</p>
+      <p>1996: la carta, el apellido del juez, tres noches sin dormir. <em>«Esa mujer tiene que dejar de buscar.»</em> Y el vivo: Elvira toca la cicatriz, levanta los ojos y la mira a ella.</p>
+      <div class="giro"><b>Giro</b>«Ella supo. Me miró. Y me dio las gracias. ¿Vos entendés? Le robé la hija dos veces y me dio las gracias.» Al amanecer, Victoria camina hasta la casa de Elvira, que barre el patio: «¿A quién busca, señora?». «A nadie.»</div>
+    </div>
+    <div class="ep">
+      <div class="num">EP 05</div><h2>Los angelitos</h2>
+      <p>Victoria decide que el programa del viernes va a ser otro, y para hacerlo necesita a la única persona que conoce los papeles del pueblo: la falsa. Las dos Milagros, juntas, en el Registro a la hora de la siesta. Hojas cortadas con regla. Ciento catorce «ahijados» del juez. Sor Clemencia las recibe con mate y scones.</p>
+      <p>Las Madres entran al cementerio con palas. En los cajoncitos blancos hay ladrillos envueltos en diarios de 1977. En uno no hay ladrillos.</p>
+      <p>Lu abre la lata: treinta y una cintas rojas, cada una con un nombre escrito con letra de nene. Las Madres reconocen los nudos que hicieron ellas. Caminan hasta la casa de Elvira.</p>
+      <div class="giro"><b>Giro</b>Elvira las recibe en 1978, contenta: «¿Ya ha nacido el suyo, doña Ñata? Démelo, que la hermana dice que lo lleve a bañar». La misma frase, de la misma boca, cincuenta años después. La santa del pueblo era la que se los llevaba.</div>
+    </div>
+  </div>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 12</b></div>
+</section>
+
+<!-- 13. EPISODIOS 6-7 -->
+<section class="page">
+  <div class="hilo"><i style="left:108mm"></i></div>
+  <div class="kicker" style="margin-top:6mm">Episodios <span class="spoiler">CONTIENE GIROS</span></div>
+  <div class="eps" style="grid-template-columns:1fr 1.12fr;margin-top:2mm;font-size:10pt">
+    <div class="ep esp">
+      <span class="tag">Episodio especial</span>
+      <div class="num">EP 06</div><h2 style="font-size:24pt">La siesta</h2>
+      <p>6 de enero de 1979, de la una a las seis de la tarde. Casi en tiempo real, en 16 mm, sin música, mitad en quichua. Un cuento de terror a plena luz.</p>
+      <p>Elvira, veinticinco años, «la que lleva». Esa mañana se niega por primera vez. La monja: <em>«Dios te va a pedir cuentas del que no llevaste».</em> El juez decide cobrarse. Su esposa le regala a Moncho, de ocho, una bicicleta roja a cambio de un mandado: «traé a tu hermanita, que los Reyes le dejaron algo». El nene cruza el pueblo dormido con la beba en brazos, orgulloso.</p>
+      <p>Elvira corre. El juez, en la tranquera: <em>«Buscala si querés. Pero tu dedo está en treinta y un expedientes».</em> En la casa, Moncho con su bicicleta: «La he dejado donde los Reyes, mama. Me han dicho que ya la traen». Elvira no le pega. Lo sienta y le enseña la mentira: «Vos no has hecho nada. Se la ha llevado el Duende. Decilo». Él lo repite hasta creerlo.</p>
+      <div class="giro"><b>Giro</b>Coda, 2026: Moncho escucha el casete en un walkman de la sala de evidencias. La hermana que volvió nunca fue su hermana. Se le termina la absolución. Al Turco no quiso matarlo: apretó de más. Ahora va a buscar a Yésica.</div>
+    </div>
+    <div class="ep">
+      <div class="num">EP 07 · FINAL</div><h2>Es ella</h2>
+      <p>El juez Argañaraz se muere durmiendo la siesta, con los sacramentos, un día antes de la fiesta. El municipio decreta duelo. La impunidad también es biológica.</p>
+      <p>Moncho lleva a Yésica al pozo seco que le da nombre al pueblo. No puede. Ella le dice la única verdad que tiene: <em>«Yo también me la creí, Moncho. Es lo más parecido a una familia que tuve».</em> Él se entrega con lo que custodió treinta años: el libro del juez. Ciento catorce nombres.</p>
+      <p>Viernes, 21 horas, en vivo. Marilú abre la puerta blanca y no sale nadie. Desde el móvil, Victoria larga el crudo. El país escucha el susurro. Marilú confiesa a cámara. Victoria baja del camión y se arrodilla; Elvira le toca la oreja: «Mili». Un segundo. Después busca alrededor: <em>«¿Y la otra? ¿Dónde está mi otra hija?»</em></p>
+      <div class="giro"><b>Epílogo</b>Elvira adopta a Yésica Romina Benítez, con su nombre. Firma con el mismo dedo que firmó treinta y un robos: «Esta vez sé lo que firmo». Marilú, camino al juzgado, a Rolo: «¿Cuánto medimos?». Doña Ñata no perdona a Elvira, pero va a cebarle mate porque está sola. Y una tarde baja del colectivo un hombre de cuarenta y nueve años con un bolso, busca una chapita en la plaza y se acuesta en una hamaca de criatura.</div>
+    </div>
+  </div>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 13</b></div>
+</section>
+
+<!-- 14. TEMAS Y FORMA -->
+<section class="page">
+  <div class="hilo"><i style="left:144mm"></i></div>
+  <div class="cols c2" style="gap:14mm;margin-top:5mm;font-size:11.2pt;line-height:1.42">
+    <div>
+      <div class="kicker">De qué habla</div>
+      <h1 style="font-size:27pt;margin-bottom:4mm">A quién se busca<br><em>y a quién no.</em></h1>
+      <div style="display:grid;gap:3.6mm">
+        <div class="pilar"><h2>La identidad como relato</h2><p>Sangre, crianza, papeles. La serie pone las tres en la misma mesa y deja que se peleen. Su respuesta no es cómoda: Elvira tiene dos hijas y ninguna de las dos lo es del todo.</p></div>
+        <div class="pilar"><h2>Los otros chicos robados</h2><p>Durante décadas, en el norte, jueces, parteras y monjas «cambiaron de clase» a los hijos de mujeres pobres. Nadie hizo una lista. La serie imagina un pueblo donde esa lista existe y la abre.</p></div>
+        <div class="pilar"><h2>La televisión como iglesia</h2><p>Un país le escribía a una conductora porque el Estado no contestaba. El programa mintió y, mintiendo, hizo el único milagro que ese pueblo conoció. ¿Qué se le debe a un fraude que dio esperanza?</p></div>
+        <div class="pilar"><h2>El perdón como violencia</h2><p>Todos los que vienen a pedir perdón rompen algo. La serie desconfía de la confesión que alivia al que confiesa y prefiere el gesto de quien se queda a cebar mate.</p></div>
+      </div>
+    </div>
+    <div>
+      <div class="kicker">Cómo se ve y cómo suena</div>
+      <h1 style="font-size:27pt;margin-bottom:4mm">Tres texturas,<br><em>una sola herida.</em></h1>
+      <p><strong>Imagen.</strong> Cada época tiene su formato y su temperatura, y las tres se contaminan: el presente se detiene a mirar un video viejo cuadro por cuadro; 1996 irrumpe en una pantalla gigante en medio de la plaza. La cámara es paciente con las caras y especialmente con la de Elvira: la niebla que va y viene es el gran efecto especial de la serie.</p>
+      <p><strong>Objetos que cuentan.</strong> La hamaca. La cinta roja. La lata. El táper de empanadas. El sillón color salmón reconstruido en medio de una plaza de tierra, con una puerta blanca parada sola, abierta a la nada.</p>
+      <p><strong>Sonido.</strong> Chicharras como un cable de alta tensión. La vidala de Ñata a capela. Guaracha santiagueña a todo volumen en la fiesta. Y el jingle del programa —saxo, teclados, coro—, que arranca como chiste de época y termina, lento y desnudo, como canción de cuna.</p>
+      <p><strong>El oído.</strong> Lo más importante de la serie se dice bajito y no se escucha: un susurro en 1996 que la televisión no registró. Toda la temporada es el camino hacia ese audio.</p>
+      <p><strong>El habla.</strong> Santiagueño real, con su pretérito perfecto y su «m'hijita»; porteño de productora; conurbano de los noventa guardado bajo llave. En esta serie el acento también delata.</p>
+    </div>
+  </div>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 14</b></div>
+</section>
+
+<!-- 15. POR QUÉ SE VENDE -->
+<section class="page">
+  <div class="hilo"><i style="left:180mm"></i></div>
+  <div class="cols" style="grid-template-columns:1.2fr 1fr;gap:14mm;margin-top:6mm">
+    <div>
+      <div class="kicker">Por qué esta serie</div>
+      <h1 style="font-size:29pt;margin-bottom:4mm">Se cuenta en una línea<br><em>y no se puede dejar de mirar.</em></h1>
+      <ul class="lista">
+        <li data-n="01"><strong>Una premisa con doble fondo.</strong> «La hija que le devolvió la tele no era la hija» vende la serie. «Y la madre lo sabía» la vuelve inolvidable.</li>
+        <li data-n="02"><strong>Cuatro papeles para cuatro actrices.</strong> 47, 48, 73 y 82 años. La impostora, la heredera, la santa y la diva. Personajes de los que dan premios.</li>
+        <li data-n="03"><strong>Un formato que el público ya conoce.</strong> Todos vimos un programa de reencuentros. La serie usa esa memoria afectiva y después la da vuelta.</li>
+        <li data-n="04"><strong>Cada episodio cierra con un giro.</strong> Siete finales que obligan a seguir, y dos episodios‑evento, el 4 y el 6, pensados para que se hable de ellos por separado.</li>
+        <li data-n="05"><strong>Local y universal.</strong> Profundamente argentina en el habla, el humor y la herida; legible en cualquier país que haya tenido chicos robados, televisión de la tarde y madres.</li>
+        <li data-n="06"><strong>Producción contenida.</strong> Un pueblo, una plaza, una casa, un hotel y un estudio de televisión. Historia cerrada en siete episodios, sin deudas.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="kicker">Para quién</div>
+      <p class="lead" style="font-size:14.5pt;margin-bottom:5mm">Para el público que lloró con una diva de la tarde y para el que la mira hoy con ironía en el teléfono. La serie les habla a los dos y los sienta en el mismo sillón.</p>
+      <div style="background:var(--ink);color:var(--paper);padding:6mm 7mm">
+        <h3 style="color:var(--salmon)">Tres imágenes que venden la serie</h3>
+        <p style="font-size:11.5pt">Cuarenta y dos hamacas de bebé vacías, colgadas de un algarrobo, iluminadas con velas desde abajo.</p>
+        <p style="font-size:11.5pt">Una diva de ochenta y dos años sentada en un sillón color salmón en medio de una plaza de tierra, a cuarenta y cuatro grados.</p>
+        <p style="font-size:11.5pt">Una mujer que se recoge el pelo con un lápiz porque tiene calor, y un puntito arriba de la oreja.</p>
+      </div>
+      <div style="margin-top:5mm;border-top:1.4pt solid var(--ink);padding-top:3mm;font-size:11pt;line-height:1.44">
+        <h3>Lo que la serie se anima a hacer</h3>
+        <p>Querer a una ladrona de chicos. Darle la razón, por un rato, a una diva monstruosa. Hacer reír con el Alzheimer sin burlarse nunca. Dejar morir en paz al único culpable de verdad. Y terminar sin castigo ni perdón: con una adopción.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pie"><span>Te estábamos esperando — Biblia de serie</span><b>▶ 15</b></div>
+</section>
+
+<!-- 16. CIERRE -->
+<section class="page dark cierre">
+  <div class="osd" style="position:absolute;left:17mm;top:15mm;opacity:.86">CORBATERO 2 — CRUDO</div>
+  <div class="osd" style="position:absolute;right:17mm;top:15mm;opacity:.86"><span style="color:var(--rojo)">●</span> 20·11·1996</div>
+  <div class="susurro">
+    <span>La chica, al oído</span>
+    «Por favor, señora.<br>No tengo a nadie.»
+    <span>Elvira, contra su pelo</span>
+    «Yo tampoco, m'hija.»
+    <span>Elvira, al país</span>
+    «Es ella.»
+  </div>
+  <div class="osd" style="position:absolute;left:17mm;bottom:14mm;opacity:.86">STOP ■</div>
+  <div class="osd" style="position:absolute;right:17mm;bottom:14mm;opacity:.86">TE ESTÁBAMOS ESPERANDO</div>
+</section>
+
+<script>
+// Las cuarenta y dos hamacas del algarrobo, dibujadas con una semilla fija.
+(function(){
+  var svg=document.getElementById('hamacas'),ns='http://www.w3.org/2000/svg',s=7;
+  function r(){s=(s*16807)%2147483647;return (s-1)/2147483646}
+  function el(n,a){var e=document.createElementNS(ns,n);for(var k in a)e.setAttribute(k,a[k]);svg.appendChild(e);return e}
+  var defs=el('defs',{});
+  defs.innerHTML='<radialGradient id="g"><stop offset="0" stop-color="#ffd9a0" stop-opacity=".95"/><stop offset=".25" stop-color="#ee8a6c" stop-opacity=".45"/><stop offset="1" stop-color="#ee8a6c" stop-opacity="0"/></radialGradient>';
+  // ramas
+  el('path',{d:'M-20,150 C500,60 900,210 1500,120 S2400,40 2990,160',fill:'none',stroke:'#3a2c20','stroke-width':46,'stroke-linecap':'round'});
+  el('path',{d:'M700,150 C900,40 1200,10 1500,60',fill:'none',stroke:'#3a2c20','stroke-width':22,'stroke-linecap':'round'});
+  el('path',{d:'M1900,95 C2200,10 2500,0 2800,50',fill:'none',stroke:'#3a2c20','stroke-width':20,'stroke-linecap':'round'});
+  var n=42,x0=1210,x1=2890;
+  for(var i=0;i<n;i++){
+    var x=x0+(x1-x0)*i/(n-1)+(r()-.5)*26, w=30+r()*12, top=120+Math.sin(i*.37)*30, len=110+(i%3)*150+r()*120, y=top+len, sag=30+r()*12;
+    var rojo=(i===19);
+    el('line',{x1:x-w,y1:top,x2:x-w,y2:y,stroke:'#b9a47e','stroke-width':2,opacity:.6});
+    el('line',{x1:x+w,y1:top,x2:x+w,y2:y,stroke:'#b9a47e','stroke-width':2,opacity:.6});
+    el('path',{d:'M'+(x-w)+','+y+' Q'+x+','+(y+sag*2)+' '+(x+w)+','+y+' Q'+x+','+(y+sag*.5)+' '+(x-w)+','+y+'Z',fill:rojo?'#f3ead9':'#d9c7a3',opacity:rojo?1:.82});
+    if(rojo){el('path',{d:'M'+(x+w)+','+(y-40)+' q16,26 4,50 M'+(x+w)+','+(y-40)+' q-14,22 -6,44',fill:'none',stroke:'#c0271e','stroke-width':5,'stroke-linecap':'round'});el('circle',{cx:x+w,cy:y-40,r:6,fill:'#c0271e'})}
+    var vy=850+r()*50;
+    el('circle',{cx:x,cy:vy,r:52,fill:'url(#g)'});
+    el('circle',{cx:x,cy:vy,r:4.4,fill:'#fff3d6'});
+  }
+})();
+</script>
+</body>
+</html>
